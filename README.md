@@ -90,3 +90,43 @@ export const config = {
 ```
 
 Si jamais ce fichier est modifié, alors hot hook appellera la fonction `onFullReloadAsked` que vous pouvez spécifier dans les options de `hot.init`.
+
+
+## How it works ?
+
+Premièrement, commencons par expliquer les fondamentaux.
+
+### What is a hook ? 
+
+Hot Hook est un [hook](https://nodejs.org/api/module.html#customization-hooks) pour Node.js. En quelques mots : un hook est un moyen d'intercepter le chargement d'un module. à chaque fois, dans votre code, que vous faites un `import`, Hot hook est en mesure d'intercepter cela et de faire des actions supplémentaires comme injecter ou transformer le code du module importé, enregistrer des informations sur le module, etc.
+
+### ESM Cache busting
+
+Dès lors que vous utilisez un `import`, Node.js charge le module en mémoire et le garde en cache. Cela signifie que si vous importez ce meme module plusieurs fois dans votre application, Node.js ne le chargera qu'une seule fois et cela tout au long de la durée de vie de l'application.
+
+Ce qui est embetant pour avoir du hot module reloading.
+
+Avant, grace au CommonJS ( `require` ), on avait la main sur ce cache de Node.js. On avait la possibilité de supprimer un module du cache ( `delete require.cache` ), et donc un `require` sur ce module forcerait Node.js à récupérer la dernière version du module.
+
+Donc, comment on fait ça en ESM ? Il y a des tas de discussions sur ce sujet depuis un moment ( https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806 ). Mais pour l'instant, il n'y a pas de solution officielle. Cependant il existe un trick. Un trick qui cause des memory leaks, mais qui sont tellement minimes que cela ne devrait pas poser de problèmes pour la plupart des applications. D'autant plus qu'on se sert de ce trick SEULEMENT en mode développement.
+
+C'est de ce trick que Hot Hook se sert pour faire du hot module reloading. Et cela consiste à juste ajouter un query parameter à l'url du module importé. Cela force Node.js à charger le module à nouveau et donc à avoir la dernière version du module.
+
+```ts
+await import('./app.js?v=1')
+await sleep(5_000)
+await import('./app.js?v=2')
+```
+
+Si vous executez ce code, et qu'entre les deux imports vous modifiez le fichier `app.js`, alors le deuxième import chargera la dernière version du module que vous avez sauvegardé.
+
+### Hot Hook
+
+Avec tout ça, Hot Hook est finalement assez simple : 
+
+- On intercepte les imports avec un hook
+- On watch tous les fichiers du projet et on build un arbre de dépendances pour chaque module
+- Si jamais un fichier change, alors on augmente le query parameter de l'url du module importé
+- Et donc la prochaine fois que le module est importé, Node.js chargera la dernière version du module
+
+Simple, léger, et efficace.

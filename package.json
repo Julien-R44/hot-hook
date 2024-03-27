@@ -1,0 +1,60 @@
+{
+  "name": "esm-hot-reload",
+  "description": "",
+  "version": "0.0.0",
+  "main": "index.js",
+  "type": "module",
+  "files": [
+    "build"
+  ],
+  "exports": {
+    ".": "./build/src/loader.js",
+    "./register": "./build/src/register.js",
+    "./import-meta": {
+      "types": "./import-meta.d.ts"
+    },
+    "./adonisjs": "./build/src/adonis.js"
+  },
+  "scripts": {
+    "clean": "del-cli build",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext=.ts",
+    "format": "prettier --write .",
+    "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
+    "pretest": "npm run lint",
+    "test": "c8 npm run quick:test",
+    "prebuild": "npm run lint && npm run clean",
+    "build": "tsc",
+    "release": "np",
+    "version": "npm run build",
+    "prepublishOnly": "npm run build"
+  },
+  "devDependencies": {
+    "@adonisjs/eslint-config": "^1.3.0",
+    "@adonisjs/prettier-config": "^1.3.0",
+    "@adonisjs/tsconfig": "^1.3.0",
+    "@japa/assert": "2.0.0-2",
+    "@japa/file-system": "2.0.0-2",
+    "@japa/runner": "3.0.0-9",
+    "@japa/snapshot": "2.0.0-2",
+    "@swc/core": "^1.4.11",
+    "@types/node": "^20.11.30",
+    "c8": "^9.1.0",
+    "eslint": "^8.57.0",
+    "execa": "^8.0.1",
+    "prettier": "^3.2.5",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@adonisjs/application": "^8.1.0",
+    "chokidar": "^3.6.0"
+  },
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "ISC",
+  "keywords": [],
+  "eslintConfig": {
+    "extends": "@adonisjs/eslint-config/package"
+  },
+  "prettier": "@adonisjs/prettier-config"
+}

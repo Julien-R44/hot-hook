@@ -35,12 +35,13 @@ const server = http.createServer(async (request, response) => {
   const app = await import('./app.js')
   app.default(request, response)
 })
+
 server.listen(8080)
 ```
 
 C'est un exemple simple, mais ci-dessus, le module `app.js` sera toujours rechargé avec la dernière version à chaque fois que vous modifierez le fichier. Cependant, le serveur http ne sera pas redémarré. 
 
-On a quelques exemples dans le dossier `examples` avec différents frameworks pour vous aider à setup Hot Hook dans votre application.
+On a quelques exemples dans le dossier `examples` avec différents frameworks pour vous aider à setup Hot Hook dans votre application. **Si vous utilisez [AdonisJS](https://adonisjs.com/)** : c'est votre jour de chance. Hot-hook est intégré dans AdonisJS et a d'ailleurs été la raison pour laquelle j'ai créé cette librairie.
 
 ## Options
 
@@ -48,6 +49,44 @@ On a quelques exemples dans le dossier `examples` avec différents frameworks po
 
 - `reload` : Un tableau de glob patterns qui permet de spécifier quels fichiers doivent trigger un full reload du processus.
 
+## API
 
+### import.meta.hot
 
+La variable `import.meta.hot` est disponible si vous avez besoin de conditionner du code en fonction de si hot-hook est activé ou non.
 
+```
+if (import.meta.hot) {
+  // code spécifique pour le hot module reloading
+}
+```
+
+### import.meta.hot.dispose()
+
+`import.meta.hot.dispose` est une fonction qui permet de spécifier du code qui doit être exécuté avant qu'un module soit rechargé. Cela peut etre utile pour fermer des connexions, nettoyer des ressources, etc.
+
+```ts
+const interval = setInterval(() => {
+  console.log('Hello')
+}, 1000)
+
+import.meta.hot?.dispose(() => {
+  clearInterval(interval)
+})
+```
+
+Ici, à chaque fois que le module sera rechargé, le `interval` sera nettoyé.
+
+### import.meta.hot.decline()
+
+`import.meta.hot.decline` est une fonction qui permet de spécifier que le module ne doit pas etre rechargé. Cela peut etre utile pour des modules qui ne sont pas sensés etre hot rechargés comme des fichiers de configuration.
+
+```ts
+import.meta.hot?.decline()
+
+export const config = {
+  port: 8080
+}
+```
+
+Si jamais ce fichier est modifié, alors hot hook appellera la fonction `onFullReloadAsked` que vous pouvez spécifier dans les options de `hot.init`.

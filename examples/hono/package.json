@@ -1,9 +1,11 @@
 {
+  "type": "module",
   "scripts": {
-    "dev": "tsx watch src/index.ts"
+    "dev": "tsx src/index.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "hot-hook": "workspace:*",
     "tsx": "^3.12.2"
   },
   "dependencies": {

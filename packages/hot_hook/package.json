@@ -1,5 +1,5 @@
 {
-  "name": "@hot-hook/monorepo",
+  "name": "hot-hook",
   "description": "",
   "version": "0.0.0",
   "main": "index.js",
@@ -7,6 +7,13 @@
   "files": [
     "build"
   ],
+  "exports": {
+    ".": "./build/src/hot.js",
+    "./loader": "./build/src/loader.js",
+    "./import-meta": {
+      "types": "./import-meta.d.ts"
+    }
+  },
   "scripts": {
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
@@ -37,6 +44,10 @@
     "prettier": "^3.2.5",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3"
+  },
+  "dependencies": {
+    "@adonisjs/application": "^8.1.0",
+    "chokidar": "^3.6.0"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "ISC",

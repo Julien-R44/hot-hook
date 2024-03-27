@@ -1,10 +1,15 @@
-import { }
+import { hot } from 'hot-hook'
 import { serve } from '@hono/node-server'
 import { Hono } from 'hono'
+
+await hot.init({
+  reload: ['./index.ts'],
+})
 
 const app = new Hono()
 
 app.get('/', async (c) => {
+  console.log('goo')
   const { MyService } = await import('./my_service.js')
   const myService = new MyService()
 

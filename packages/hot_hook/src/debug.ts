@@ -1,4 +1,4 @@
 import { debuglog } from 'node:util'
 
-const debug = debuglog('adonisjs:esm-hot-reload')
+const debug = debuglog('hot-hook')
 export default debug

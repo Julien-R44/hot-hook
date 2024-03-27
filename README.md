@@ -17,7 +17,7 @@ pnpm add hot-hook
 Une fois installé, vous devez ajouter le code suivant le plus tôt possible dans votre application NodeJS.
 
 ```ts
-import { hot } from 'esm-hot-reload/adonisjs'
+import { hot } from 'hot-hook'
 
 await hot.init(import.meta.url, {
   // options
@@ -26,10 +26,27 @@ await hot.init(import.meta.url, {
 
 ## Utilisation
 
-```ts
-import fastify from 'fastify'
+Une fois Hot Hook initialisé dans votre application, il vous faudra utiliser des `await import()` aux endroits ou vous souhaitez bénéficier du hot module reloading. 
 
-const app = fastify()
+```ts
+import * as http from 'http'
+
+const server = http.createServer(async (request, response) => {
+  const app = await import('./app.js')
+  app.default(request, response)
+})
+server.listen(8080)
+```
+
+C'est un exemple simple, mais ci-dessus, le module `app.js` sera toujours rechargé avec la dernière version à chaque fois que vous modifierez le fichier. Cependant, le serveur http ne sera pas redémarré. 
+
+On a quelques exemples dans le dossier `examples` avec différents frameworks pour vous aider à setup Hot Hook dans votre application.
+
+## Options
+
+`hot.init` accepte les options suivantes:
+
+- `reload` : Un tableau de glob patterns qui permet de spécifier quels fichiers doivent trigger un full reload du processus.
 
 
 

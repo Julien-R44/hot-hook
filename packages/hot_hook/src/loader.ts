@@ -68,7 +68,7 @@ export const load: LoadHook = async (url, context, nextLoad) => {
 
   if (result.format === 'module') {
     const hotFns = `
-      import { hot as ____hot } from 'esm-hot-reload/adonisjs'
+      import { hot as ____hot } from 'hot-hook'
       import.meta.hot = {}
 
       import.meta.hot.dispose = (callback) => {

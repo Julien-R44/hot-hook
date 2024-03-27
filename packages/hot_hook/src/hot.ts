@@ -48,7 +48,7 @@ class Hot {
      */
     const { port1, port2 } = new MessageChannel()
 
-    register('esm-hot-reload', {
+    register('hot-hook/loader', {
       parentURL: import.meta.url,
       transferList: [port2],
       data: {
@@ -80,6 +80,8 @@ class Hot {
   }
 }
 
+// @ts-ignore
 const hot: Hot = globalThis.hot || new Hot()
+// @ts-ignore
 globalThis.hot = hot
 export { hot }

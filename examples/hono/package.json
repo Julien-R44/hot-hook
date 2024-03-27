@@ -1,7 +1,7 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsx watch --ignore=./src/views src/index.tsx"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

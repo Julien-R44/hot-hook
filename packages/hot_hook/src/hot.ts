@@ -1,7 +1,8 @@
 import { register } from 'node:module'
-import { MessageChannelMessage } from './types.js'
+import { InitOptions, MessageChannelMessage } from './types.js'
 
 class Hot {
+  #options!: InitOptions
   #declinePaths = new Set<string>()
   #disposeCallbacks = new Map<string, () => void>()
 
@@ -15,11 +16,13 @@ class Hot {
   #onMessage(message: MessageChannelMessage) {
     if (message.type === 'hot-hook:full-reload') {
       process.send?.({ type: 'hot-hook:full-reload' })
+      this.#options.onFullReloadAsked?.()
     }
 
     if (message.type === 'hot-hook:invalidated') {
       if (this.#hasOneDeclinedPath(message.paths)) {
         process.send?.({ type: 'hot-hook:full-reload' })
+        this.#options.onFullReloadAsked?.()
       }
 
       for (const url of message.paths) {
@@ -32,15 +35,9 @@ class Hot {
   /**
    * Register the hot reload hooks
    */
-  async init(options: {
-    /**
-     * An array of globs that will trigger a full server reload when changed.
-     *
-     * You can also pass a function that will receive the changed file path
-     * and return a boolean to decide if the server should reload or not.
-     */
-    reload?: string[] | ((path: string) => boolean)
-  }) {
+  async init(options: InitOptions) {
+    this.#options = options
+
     /**
      * First, we setup a message channel to be able to communicate
      * between the hook and the application process since hooks

@@ -130,3 +130,49 @@ Avec tout ça, Hot Hook est finalement assez simple :
 - Et donc la prochaine fois que le module est importé, Node.js chargera la dernière version du module
 
 Simple, léger, et efficace.
+
+## Limitations
+
+### Full reload
+
+Pour les full reloads, il vous faudra utiliser un genre de manager de process pour redémarrer le processus. Hot hook ne le fait pas pour vous. Si il y a des demandes on pourra peut etre ajouter cette fonctionnalité.
+
+En attendant, il y a des tas de solutions simple pour ça : spawner votre application en tant que child process, utiliser des outils comme nodemon, des worker threads, etc. 
+
+Par exemple, sur AdonisJS, on utilise un 
+
+Ici un simple exemple avec des clusters Nodejs : 
+
+```ts
+// title: dev-server.ts
+
+if (cluster.isPrimary) {
+  cluster.fork()
+  cluster.on('exit', (worker, code) => {
+    console.log(`[master] worker #${worker.id} down, restarting\n`)
+    cluster.fork()
+  })
+
+  process.on('SIGINT', () => {})
+} else {
+  await hot.init({
+    reload: ['./index.tsx'],
+    onFullReloadAsked: () => {
+      process.kill(process.pid, 'SIGTERM')
+    },
+  })
+  process.on('SIGINT', () => {
+    console.log(`[worker#${cluster.worker.id}] SIGINT received! dying gracefully !\n`)
+    process.exit(0)
+  })
+
+  console.log(`new worker #${cluster.worker.id}`)
+
+  const { run } = await import('my-app.js')
+  run()
+
+}
+```
+
+Notez l'utilisation de `onFullReloadAsked` de `hot.init`. Votre callback sera executé dès lors qu'un full reload est demandé par hot-hook. Dans cet exemple, on tue le processus avec `process.kill` et on laisse le cluster manager redémarrer un nouveau processus.
+

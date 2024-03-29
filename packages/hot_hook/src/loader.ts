@@ -1,51 +1,53 @@
-import process from 'node:process'
 import path from 'node:path'
-import { promises as fs } from 'node:fs'
 import { URL } from 'node:url'
 import chokidar from 'chokidar'
-import DependencyTree from './dependency_tree.js'
-import { InitializeHook, LoadHook, ResolveHook } from 'node:module'
+import { realpath } from 'node:fs/promises'
+import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
+
 import debug from './debug.js'
-import { MessagePort } from 'node:worker_threads'
+import DependencyTree from './dependency_tree.js'
+import type { InitializeHookOptions } from './types.js'
 
 const dependencyTree = new DependencyTree()
 
-let messagePort: MessagePort | undefined
-let reloadPaths: string[] = []
+let options: InitializeHookOptions
 
-const includedPackages = process.env.HOT_INCLUDE_PACKAGES
-  ? process.env.HOT_INCLUDE_PACKAGES.split(',')
-  : []
-
+/**
+ * Check if a path should be ignored and not watched.
+ */
 function isPathIgnored(filePath: string) {
-  if (filePath.includes('/.yarn/')) {
-    return true
+  return options.ignore?.some((pattern) => filePath.includes(pattern)) ?? false
+}
+
+/**
+ * Check if a path should trigger a full reload.
+ */
+function isReloadPath(filePath: string) {
+  if (typeof options.reload === 'function') {
+    return options.reload(filePath)
   }
 
-  if (filePath.includes('/node_modules/')) {
-    return !includedPackages.some((packageName) =>
-      filePath.includes(`/node_modules/${packageName}`)
-    )
-  }
-
-  return false
+  return options.reload?.some((pattern) => filePath.includes(pattern)) ?? false
 }
 
 const watcher = chokidar
   .watch([])
   .on('change', async (relativeFilePath) => {
     const filePath = path.resolve(relativeFilePath)
-    const realFilePath = await fs.realpath(filePath)
+    const realFilePath = await realpath(filePath)
 
     debug('Changed %s', realFilePath)
-    if (realFilePath.includes('config')) {
-      messagePort?.postMessage({ type: 'full-reload' })
+    if (isReloadPath(realFilePath)) {
+      options.messagePort?.postMessage({ type: 'hot-hook:full-reload' })
       return
     }
 
     const invalidatedFiles = dependencyTree.invalidateFileAndDependents(realFilePath)
     debug('Invalidating %s', Array.from(invalidatedFiles).join(', '))
-    messagePort?.postMessage({ type: 'invalidating', paths: Array.from(invalidatedFiles) })
+    options.messagePort?.postMessage({
+      type: 'hot-hook:invalidated',
+      paths: Array.from(invalidatedFiles),
+    })
   })
   .on('unlink', (relativeFilePath) => {
     const filePath = path.resolve(relativeFilePath)
@@ -53,10 +55,13 @@ const watcher = chokidar
     dependencyTree.remove(filePath)
   })
 
+/**
+ * Load hook
+ */
 export const load: LoadHook = async (url, context, nextLoad) => {
   const parsedUrl = new URL(url)
-  if (parsedUrl.searchParams.has('hot-esm')) {
-    parsedUrl.searchParams.delete('hot-esm')
+  if (parsedUrl.searchParams.has('hot-hook')) {
+    parsedUrl.searchParams.delete('hot-hook')
     url = parsedUrl.href
   }
 
@@ -68,15 +73,16 @@ export const load: LoadHook = async (url, context, nextLoad) => {
 
   if (result.format === 'module') {
     const hotFns = `
-      import { hot as ____hot } from 'hot-hook'
       import.meta.hot = {}
 
       import.meta.hot.dispose = (callback) => {
-        ____hot.dispose(import.meta.url, callback)
+        const { hot } = await import('hot-hook)
+        hot.dispose(import.meta.url, callback)
       };
 
       import.meta.hot.decline = () => {
-        ____hot.decline(import.meta.url)
+        const { hot } = await import('hot-hook)
+        hot.decline(import.meta.url)
       }
     `
 
@@ -86,10 +92,13 @@ export const load: LoadHook = async (url, context, nextLoad) => {
   return result
 }
 
+/**
+ * Resolve hook
+ */
 export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
   const parentUrl = (context.parentURL && new URL(context.parentURL)) as URL
-  if (parentUrl?.searchParams.has('hot-esm')) {
-    parentUrl.searchParams.delete('hot-esm')
+  if (parentUrl?.searchParams.has('hot-hook')) {
+    parentUrl.searchParams.delete('hot-hook')
     context = { ...context, parentURL: parentUrl.href }
   }
 
@@ -112,21 +121,13 @@ export const resolve: ResolveHook = async (specifier, context, nextResolve) => {
     dependencyTree.addDependent(resultPath, parentPath)
   }
 
-  resultUrl.searchParams.set('hot-esm', dependencyTree.getVersion(resultPath)!.toString())
+  resultUrl.searchParams.set('hot-hook', dependencyTree.getVersion(resultPath)!.toString())
   return { ...result, url: resultUrl.href }
 }
 
-export const initialize: InitializeHook = (data: {
-  /**
-   * The message port to communicate with the parent thread.
-   */
-  messagePort?: MessagePort
-
-  /**
-   * An array of file paths that will trigger a full server reload when changed.
-   */
-  reload?: string[]
-}) => {
-  messagePort = data.messagePort
-  reloadPaths = data.reload || []
+/**
+ * Initialize hook
+ */
+export const initialize: InitializeHook = (data: InitializeHookOptions) => {
+  options = data
 }

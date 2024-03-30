@@ -28,7 +28,7 @@
     "test": "c8 npm run quick:test",
     "prebuild": "npm run lint && npm run clean",
     "build": "tsc",
-    "release": "np",
+    "release": "release-it",
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
@@ -46,6 +46,7 @@
     "eslint": "^8.57.0",
     "execa": "^8.0.1",
     "prettier": "^3.2.5",
+    "release-it": "^17.1.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.4.3"
   },
@@ -59,5 +60,21 @@
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): ${version}",
+      "tagAnnotation": "v${version}",
+      "tagName": "v${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "v${version}",
+      "web": true
+    }
+  }
 }

@@ -6,11 +6,7 @@ import { snapshot } from '@japa/snapshot'
 processCLIArgs(process.argv.splice(2))
 configure({
   files: ['tests/**/*.spec.ts'],
-  plugins: [
-    assert(),
-    fileSystem(),
-    snapshot(),
-  ],
+  plugins: [assert(), fileSystem(), snapshot()],
 })
 
 run()

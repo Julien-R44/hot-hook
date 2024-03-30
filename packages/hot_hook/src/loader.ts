@@ -1,6 +1,7 @@
 import path from 'node:path'
 import { URL } from 'node:url'
 import chokidar from 'chokidar'
+import { minimatch } from 'minimatch'
 import { realpath } from 'node:fs/promises'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
@@ -16,18 +17,21 @@ let options: InitializeHookOptions
  * Check if a path should be ignored and not watched.
  */
 function isPathIgnored(filePath: string) {
-  return options.ignore?.some((pattern) => filePath.includes(pattern)) ?? false
+  const match = options.ignore?.some((pattern) => minimatch(filePath, pattern, { dot: true }))
+  return match
 }
 
 /**
  * Check if a path should trigger a full reload.
  */
 function isReloadPath(filePath: string) {
+  const relativePath = path.relative(options.projectRoot, filePath)
+
   if (typeof options.reload === 'function') {
     return options.reload(filePath)
   }
 
-  return options.reload?.some((pattern) => filePath.includes(pattern)) ?? false
+  return options.reload?.some((pattern) => minimatch(relativePath, pattern, { dot: true }))
 }
 
 const watcher = chokidar
@@ -38,7 +42,8 @@ const watcher = chokidar
 
     debug('Changed %s', realFilePath)
     if (isReloadPath(realFilePath)) {
-      options.messagePort?.postMessage({ type: 'hot-hook:full-reload' })
+      console.log('isReloadPath', realFilePath)
+      options.messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
       return
     }
 
@@ -75,13 +80,13 @@ export const load: LoadHook = async (url, context, nextLoad) => {
     const hotFns = `
       import.meta.hot = {}
 
-      import.meta.hot.dispose = (callback) => {
-        const { hot } = await import('hot-hook)
+      import.meta.hot.dispose = async (callback) => {
+        const { hot } = await import('hot-hook')
         hot.dispose(import.meta.url, callback)
       };
 
-      import.meta.hot.decline = () => {
-        const { hot } = await import('hot-hook)
+      import.meta.hot.decline = async () => {
+        const { hot } = await import('hot-hook')
         hot.decline(import.meta.url)
       }
     `

@@ -1,5 +1,5 @@
 import { register } from 'node:module'
-import { InitOptions, MessageChannelMessage } from './types.js'
+import { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
 
 class Hot {
   #options!: InitOptions
@@ -15,13 +15,13 @@ class Hot {
    */
   #onMessage(message: MessageChannelMessage) {
     if (message.type === 'hot-hook:full-reload') {
-      process.send?.({ type: 'hot-hook:full-reload' })
+      process.send?.({ type: 'hot-hook:full-reload', path: message.path })
       this.#options.onFullReloadAsked?.()
     }
 
     if (message.type === 'hot-hook:invalidated') {
       if (this.#hasOneDeclinedPath(message.paths)) {
-        process.send?.({ type: 'hot-hook:full-reload' })
+        process.send?.({ type: 'hot-hook:full-reload', paths: message.paths })
         this.#options.onFullReloadAsked?.()
       }
 
@@ -36,7 +36,10 @@ class Hot {
    * Register the hot reload hooks
    */
   async init(options: InitOptions) {
-    this.#options = options
+    this.#options = {
+      ignore: ['**/node_modules/**'],
+      ...options,
+    }
 
     /**
      * First, we setup a message channel to be able to communicate
@@ -50,8 +53,10 @@ class Hot {
       transferList: [port2],
       data: {
         messagePort: port2,
-        reload: [options.reload],
-      },
+        reload: this.#options.reload,
+        ignore: this.#options.ignore,
+        projectRoot: this.#options.projectRoot,
+      } satisfies InitializeHookOptions,
     })
 
     port1.on('message', this.#onMessage.bind(this))

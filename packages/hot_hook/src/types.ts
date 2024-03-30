@@ -31,9 +31,14 @@ export interface InitOptions {
    * @default ['/node_modules/']
    */
   ignore?: string[]
+
+  /**
+   * The project root directory.
+   */
+  projectRoot: string
 }
 
-export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'reload'> & {
+export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'reload' | 'projectRoot'> & {
   /**
    * The message port to communicate with the parent thread.
    */

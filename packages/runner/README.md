@@ -21,7 +21,7 @@ To use with Typescript, you can pass a hook like this:
 pnpm hot-runner --node-args="--loader=ts-node/esm" bin/server.ts
 
 # Run with TSX
-pnpm hot-runner --node-args="--loader=\"import=tsx\"" bin/server.ts
+pnpm hot-runner --node-args="--import=tsx" bin/server.ts
 ```
 
 

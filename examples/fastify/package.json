@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "scripts": {
+    "dev": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
+  },
+  "devDependencies": {
+    "@hot-hook/runner": "workspace:*",
+    "@types/node": "^20.11.17",
+    "hot-hook": "workspace:*",
+    "tsx": "^3.12.2"
+  },
+  "dependencies": {
+    "fastify": "^4.26.2"
+  }
+}

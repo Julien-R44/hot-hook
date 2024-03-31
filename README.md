@@ -74,7 +74,7 @@ We have some examples in the examples folder with different frameworks to help y
 
 The `import.meta.hot` variable is available if you need to condition code based on whether hot-hook is enabled or not.
 
-```
+```ts
 if (import.meta.hot) {
   // Specific code that will use import.meta.hot
 }
@@ -82,7 +82,7 @@ if (import.meta.hot) {
 
 Or simply use optional chaining:
 
-```
+```ts
 import.meta.hot?.dispose()
 ```
 

@@ -1,5 +1,8 @@
 # Hot Hook
 
+> [!CAUTION]
+> Hot Hook is still in development. Use at your own risk
+
 Hot Hook is a simple and lightweight library for adding hot module reloading in NodeJS with ESM.
 
 You know how in frameworks like React or VueJS, you edit a file and the page updates automatically without needing to refresh? Well, it's the same concept but for NodeJS.

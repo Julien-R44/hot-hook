@@ -44,7 +44,7 @@ Next, you need to include the types for `import.meta.hot` in your project. To do
 }
 ```
 
-## Utilisation
+## Usage
 
 Once Hot Hook is initialized in your application, you will need to use `await import()` where you want to benefit from hot module reloading. To understand why, read the "How it works?" section below.
 
@@ -167,6 +167,10 @@ With all that, Hot Hook is ultimately quite simple:
 - Thus, the next time the module is imported, Node.js will load the latest version of the module
 
 Simple, lightweight, and efficient.
+
+## Alternatives
+
+If you are looking for a more complete HMR solution, you can take a look at [dynohot](https://github.com/braidnetworks/dynohot)
 
 ## Credits
 

@@ -1,12 +1,14 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
+    "dev:tsnode": "hot-runner --node-args=\"--import=./tsnode.esm.js\" bin/start.ts",
+    "dev:tsx": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
   },
   "devDependencies": {
     "@hot-hook/runner": "workspace:*",
     "@types/node": "^20.11.17",
     "hot-hook": "workspace:*",
+    "pino-pretty": "^11.0.0",
     "tsx": "^3.12.2"
   },
   "dependencies": {

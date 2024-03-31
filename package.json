@@ -4,9 +4,9 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "typecheck": "tsc --noEmit",
+    "typecheck": "pnpm run -r --parallel typecheck",
     "lint": "eslint . --ext=.ts",
-    "test": "pnpm test --parallel"
+    "test": "pnpm run -r --parallel test"
   },
   "devDependencies": {
     "@adonisjs/eslint-config": "^1.3.0",

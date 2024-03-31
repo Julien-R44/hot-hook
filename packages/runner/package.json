@@ -8,7 +8,8 @@
     "hot-runner": "build/bin/run.js"
   },
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@adonisjs/ace": "^13.0.0",

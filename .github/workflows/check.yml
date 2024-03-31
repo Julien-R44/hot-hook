@@ -1,0 +1,75 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: pnpm install
+
+    - name: Lint
+      run: pnpm lint
+
+  typecheck:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: |
+        pnpm install
+        pnpm -r build
+
+    - name: Typecheck
+      run: pnpm typecheck
+
+  tests:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 21
+
+    - name: Install pnpm
+      run: |
+        corepack enable
+        corepack prepare pnpm@latest --activate
+
+    - name: Install dependencies
+      run: |
+        pnpm install
+        pnpm -r build
+
+    - name: Run tests
+      run: FORCE_COLOR=1 pnpm test

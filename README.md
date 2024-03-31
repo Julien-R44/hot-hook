@@ -118,7 +118,7 @@ If this file is modified, then hot hook will call the `onFullReloadAsked` functi
 
 ## How it works ?
 
-Premièrement, commencons par expliquer les fondamentaux.
+First, let's start by explaining the basics.
 
 ### What is a hook ? 
 

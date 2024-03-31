@@ -17,7 +17,9 @@ let options: InitializeHookOptions
  * Check if a path should be ignored and not watched.
  */
 function isPathIgnored(filePath: string) {
-  const match = options.ignore?.some((pattern) => minimatch(filePath, pattern, { dot: true }))
+  const relativePath = path.relative(options.projectRoot, filePath)
+
+  const match = options.ignore?.some((pattern) => minimatch(relativePath, pattern, { dot: true }))
   return match
 }
 

@@ -76,7 +76,7 @@ The `import.meta.hot` variable is available if you need to condition code based 
 
 ```
 if (import.meta.hot) {
-  // code spécifique pour le hot module reloading
+  // Specific code that will use import.meta.hot
 }
 ```
 

@@ -82,7 +82,7 @@ export const load: LoadHook = async (url, context, nextLoad) => {
       const { hot } = await import('hot-hook');
       hot.dispose(import.meta.url, callback);
     };
-    
+
     import.meta.hot.decline = async () => {
       const { hot } = await import('hot-hook');
       hot.decline(import.meta.url);

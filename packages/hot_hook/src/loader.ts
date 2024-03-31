@@ -76,21 +76,28 @@ export const load: LoadHook = async (url, context, nextLoad) => {
   const result = await nextLoad(url, context)
 
   if (result.format === 'module') {
-    const hotFns = `
-      import.meta.hot = {}
-
-      import.meta.hot.dispose = async (callback) => {
-        const { hot } = await import('hot-hook')
-        hot.dispose(import.meta.url, callback)
-      };
-
-      import.meta.hot.decline = async () => {
-        const { hot } = await import('hot-hook')
-        hot.decline(import.meta.url)
-      }
+    let hotFns = `
+    import.meta.hot = {};
+    import.meta.hot.dispose = async (callback) => {
+      const { hot } = await import('hot-hook');
+      hot.dispose(import.meta.url, callback);
+    };
+    
+    import.meta.hot.decline = async () => {
+      const { hot } = await import('hot-hook');
+      hot.decline(import.meta.url);
+    };
     `
 
-    result.source = hotFns + result.source
+    /**
+     * By minifying the hot functions we can avoid adding a new line to the source
+     * and so we can avoid totally breaking the source maps.
+     *
+     * This simple trick seems to do the job for now, but we should probably
+     * find a better way to handle this in the future.
+     */
+    const minified = hotFns.replace(/\n/g, '').replace(/\s{2,}/g, ' ')
+    result.source = minified + result.source
   }
 
   return result

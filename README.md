@@ -1,32 +1,49 @@
 # Hot Hook
 
-Hot Hook est une librairie simple et légère qui permet d'avoir du hot module reloading dans NodeJS avec de l'ESM.
+Hot Hook is a simple and lightweight library for adding hot module reloading in NodeJS with ESM.
 
-Vous voyez le hot module reloading dans les frameworks comme React ou VueJS où vous modifiez un fichier et la page se met à jour automatiquement sans avoir à rafraîchir la page ? Et bien c'est le meme concept mais pour NodeJS. 
+You know how in frameworks like React or VueJS, you edit a file and the page updates automatically without needing to refresh? Well, it's the same concept but for NodeJS.
 
-Prenez un serveur Express par exemple, jusqu'à présent le processus le plus répandu de développement était de watcher l'intégralité du projet avec des outils comme nodemon ou chokidar, et de redémarrer la totalité du serveur dès lors qu'un fichier changeait. Avec Hot Hook, vous n'avez plus besoin de redémarrer tout le serveur, vous pouvez faire en sorte que seulement le module/fichier qui a changé soit rechargé. Ce qui procure une DX et une feedback loop bien plus rapide.
+Take an Express server, for example. The most common development process involves watching the entire project with tools like nodemon and restarting the whole server whenever a file changes. With Hot Hook, you no longer need to restart the entire server; you can make it so only the changed module/file is reloaded. This provides a much faster DX and feedback loop.
 
-La librairie est désigné pour etre très légère et simple. Elle ne fait pas de magie noire, pas de parsing AST, pas de transformation de code, pas de bundling. On se contente juste de recharger le module qui a changé.
+The library is designed to be very light and simple. It doesn't perform any dark magic, no AST parsing, no code transformation, no bundling. It just reloads the changed module. 
 
 ## Installation
+
+> [!TIP]
+> If you're using AdonisJS, Hono, or Fastify, we have examples in the examples folder to help you set up Hot Hook in your application.
 
 ```bash
 pnpm add hot-hook
 ```
 
-Une fois installé, vous devez ajouter le code suivant le plus tôt possible dans votre application NodeJS.
+Once installed, you need to add the following code as early as possible in your NodeJS application.
 
 ```ts
 import { hot } from 'hot-hook'
 
-await hot.init(import.meta.url, {
+await hot.init({
   // options
 })
 ```
 
+Next, you need to include the types for `import.meta.hot` in your project. To do this, add the following code in a `.d.ts` file or in the `types` property of your `tsconfig.json`.
+
+```ts
+/// <reference types="hot-hook/import-meta" />
+```
+
+```json
+{
+  "compilerOptions": {
+    "types": ["hot-hook/import-meta"]
+  }
+}
+```
+
 ## Utilisation
 
-Une fois Hot Hook initialisé dans votre application, il vous faudra utiliser des `await import()` aux endroits ou vous souhaitez bénéficier du hot module reloading. 
+Once Hot Hook is initialized in your application, you will need to use `await import()` where you want to benefit from hot module reloading. To understand why, read the "How it works?" section below.
 
 ```ts
 import * as http from 'http'
@@ -39,21 +56,23 @@ const server = http.createServer(async (request, response) => {
 server.listen(8080)
 ```
 
-C'est un exemple simple, mais ci-dessus, le module `app.js` sera toujours rechargé avec la dernière version à chaque fois que vous modifierez le fichier. Cependant, le serveur http ne sera pas redémarré. 
+This is a simple example, but above, the app.js module will always be reloaded with the latest version every time you modify the file. However, the http server will not be restarted.
 
-On a quelques exemples dans le dossier `examples` avec différents frameworks pour vous aider à setup Hot Hook dans votre application. **Si vous utilisez [AdonisJS](https://adonisjs.com/)** : c'est votre jour de chance. Hot-hook est intégré dans AdonisJS et a d'ailleurs été la raison pour laquelle j'ai créé cette librairie.
+We have some examples in the examples folder with different frameworks to help you set up Hot Hook in your application. If you are using [AdonisJS](https://adonisjs.com/): it's your lucky day. Hot hook was the reason why I created this library and we gonna have a complete integration with AdonisJS soon.
 
 ## Options
 
-`hot.init` accepte les options suivantes:
+`hot.init` accepts the following options:
 
-- `reload` : Un tableau de glob patterns qui permet de spécifier quels fichiers doivent trigger un full reload du processus.
+- `reload`: An array of glob patterns that specifies which files should trigger a full process reload.
+- `ignore`: An array of glob patterns that specifies which files should not be considered by Hot Hook. By default, ['**/node_modules/**'].
+- `projectRoot`: The path of the project root folder.
 
 ## API
 
 ### import.meta.hot
 
-La variable `import.meta.hot` est disponible si vous avez besoin de conditionner du code en fonction de si hot-hook est activé ou non.
+The `import.meta.hot` variable is available if you need to condition code based on whether hot-hook is enabled or not.
 
 ```
 if (import.meta.hot) {
@@ -61,9 +80,15 @@ if (import.meta.hot) {
 }
 ```
 
+Or simply use optional chaining:
+
+```
+import.meta.hot?.dispose()
+```
+
 ### import.meta.hot.dispose()
 
-`import.meta.hot.dispose` est une fonction qui permet de spécifier du code qui doit être exécuté avant qu'un module soit rechargé. Cela peut etre utile pour fermer des connexions, nettoyer des ressources, etc.
+`import.meta.hot.dispose` is a function that allows you to specify code that should run before a module is reloaded. This can be useful for closing connections, cleaning up resources, etc.
 
 ```ts
 const interval = setInterval(() => {
@@ -75,11 +100,11 @@ import.meta.hot?.dispose(() => {
 })
 ```
 
-Ici, à chaque fois que le module sera rechargé, le `interval` sera nettoyé.
+Here, each time the module is reloaded, the `interval` will be cleaned up.
 
 ### import.meta.hot.decline()
 
-`import.meta.hot.decline` est une fonction qui permet de spécifier que le module ne doit pas etre rechargé. Cela peut etre utile pour des modules qui ne sont pas sensés etre hot rechargés comme des fichiers de configuration.
+`import.meta.hot.decline` is a function that allows you to specify that the module should not be reloaded. This can be useful for modules that are not supposed to be hot reloaded, like configuration files.
 
 ```ts
 import.meta.hot?.decline()
@@ -89,8 +114,7 @@ export const config = {
 }
 ```
 
-Si jamais ce fichier est modifié, alors hot hook appellera la fonction `onFullReloadAsked` que vous pouvez spécifier dans les options de `hot.init`.
-
+If this file is modified, then hot hook will call the `onFullReloadAsked` function, which you can specify in the options of `hot.init`. Otherwise, by default it will just send a message to the parent process to reload the module.
 
 ## How it works ?
 
@@ -98,19 +122,19 @@ Premièrement, commencons par expliquer les fondamentaux.
 
 ### What is a hook ? 
 
-Hot Hook est un [hook](https://nodejs.org/api/module.html#customization-hooks) pour Node.js. En quelques mots : un hook est un moyen d'intercepter le chargement d'un module. à chaque fois, dans votre code, que vous faites un `import`, Hot hook est en mesure d'intercepter cela et de faire des actions supplémentaires comme injecter ou transformer le code du module importé, enregistrer des informations sur le module, etc.
+Hot Hook is a [hook](https://nodejs.org/api/module.html#customization-hooks) for Node.js. In short: a hook is a way to intercept the loading of a module. Every time you do an import in your code, Hot Hook can intercept this and perform additional actions like injecting or transforming the module's imported code, recording information about the module, etc.
 
 ### ESM Cache busting
 
-Dès lors que vous utilisez un `import`, Node.js charge le module en mémoire et le garde en cache. Cela signifie que si vous importez ce meme module plusieurs fois dans votre application, Node.js ne le chargera qu'une seule fois et cela tout au long de la durée de vie de l'application.
+Once you use an import, Node.js loads the module into memory and keeps it in cache. This means that if you import the same module multiple times in your application, Node.js will load it only once throughout the application's lifetime.
 
-Ce qui est embetant pour avoir du hot module reloading.
+This is problematic for hot module reloading.
 
-Avant, grace au CommonJS ( `require` ), on avait la main sur ce cache de Node.js. On avait la possibilité de supprimer un module du cache ( `delete require.cache` ), et donc un `require` sur ce module forcerait Node.js à récupérer la dernière version du module.
+Previously, with CommonJS (require), we had control over this Node.js cache. We could remove a module from the cache (delete require.cache), and thus a require on this module would force Node.js to fetch the latest version of the module.
 
-Donc, comment on fait ça en ESM ? Il y a des tas de discussions sur ce sujet depuis un moment ( https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806 ). Mais pour l'instant, il n'y a pas de solution officielle. Cependant il existe un trick. Un trick qui cause des memory leaks, mais qui sont tellement minimes que cela ne devrait pas poser de problèmes pour la plupart des applications. D'autant plus qu'on se sert de ce trick SEULEMENT en mode développement.
+So, how do we do this in ESM? There have been lots of discussions on this topic for a while (https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806). But for now, there's no official solution. However, there is a trick. A trick that causes memory leaks, but they are so minimal that it shouldn't be a problem for most applications. Especially since we use this trick ONLY in development mode.
 
-C'est de ce trick que Hot Hook se sert pour faire du hot module reloading. Et cela consiste à juste ajouter un query parameter à l'url du module importé. Cela force Node.js à charger le module à nouveau et donc à avoir la dernière version du module.
+This trick is what Hot Hook uses to do hot module reloading. And it simply involves adding a query parameter to the URL of the imported module. This forces Node.js to load the module anew, thus getting the latest version of the module.
 
 ```ts
 await import('./app.js?v=1')
@@ -118,61 +142,29 @@ await sleep(5_000)
 await import('./app.js?v=2')
 ```
 
-Si vous executez ce code, et qu'entre les deux imports vous modifiez le fichier `app.js`, alors le deuxième import chargera la dernière version du module que vous avez sauvegardé.
-
-### Hot Hook
-
-Avec tout ça, Hot Hook est finalement assez simple : 
-
-- On intercepte les imports avec un hook
-- On watch tous les fichiers du projet et on build un arbre de dépendances pour chaque module
-- Si jamais un fichier change, alors on augmente le query parameter de l'url du module importé
-- Et donc la prochaine fois que le module est importé, Node.js chargera la dernière version du module
-
-Simple, léger, et efficace.
-
-## Limitations
+If you execute this code, and modify the app.js file between the two imports, then the second import will load the latest version of the module you've saved.
 
 ### Full reload
 
-Pour les full reloads, il vous faudra utiliser un genre de manager de process pour redémarrer le processus. Hot hook ne le fait pas pour vous. Si il y a des demandes on pourra peut etre ajouter cette fonctionnalité.
+Now, how do we perform a full reload? How do we force Node.js to reload the entire process?
 
-En attendant, il y a des tas de solutions simple pour ça : spawner votre application en tant que child process, utiliser des outils comme nodemon, des worker threads, etc. 
+For this, there's no secret : you will need a process manager. Whenever a file listed in `reload`, or a file containing the `import.meta.hot?.decline()` instruction is modified, Hot Hook will by default send a message to the parent process to tell it to reload the module. But for that, you need a parent process. And a parent process that understands this instruction.
 
-Par exemple, sur AdonisJS, on utilise un 
+So the concept is simple: the manager needs to launch your application as a child process and listen to messages from the child process. If the child process sends a message asking for a full reload, then the manager must kill the child process and restart it.
 
-Ici un simple exemple avec des clusters Nodejs : 
+It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner here[here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
 
-```ts
-// title: dev-server.ts
+### Hot Hook
 
-if (cluster.isPrimary) {
-  cluster.fork()
-  cluster.on('exit', (worker, code) => {
-    console.log(`[master] worker #${worker.id} down, restarting\n`)
-    cluster.fork()
-  })
+With all that, Hot Hook is ultimately quite simple:
 
-  process.on('SIGINT', () => {})
-} else {
-  await hot.init({
-    reload: ['./index.tsx'],
-    onFullReloadAsked: () => {
-      process.kill(process.pid, 'SIGTERM')
-    },
-  })
-  process.on('SIGINT', () => {
-    console.log(`[worker#${cluster.worker.id}] SIGINT received! dying gracefully !\n`)
-    process.exit(0)
-  })
+- Intercept imports with a hook
+- Collect all imported files and build a dependency tree
+- If a file changes, then increase the query parameter of the imported module's URL
+- Thus, the next time the module is imported, Node.js will load the latest version of the module
 
-  console.log(`new worker #${cluster.worker.id}`)
+Simple, lightweight, and efficient.
 
-  const { run } = await import('my-app.js')
-  run()
+## Credits
 
-}
-```
-
-Notez l'utilisation de `onFullReloadAsked` de `hot.init`. Votre callback sera executé dès lors qu'un full reload est demandé par hot-hook. Dans cet exemple, on tue le processus avec `process.kill` et on laisse le cluster manager redémarrer un nouveau processus.
-
+Hot Hook was initially forked from [hot-esm](https://github.com/vinsonchuong/hot-esm) by Vinson Chuong. Thanks a lot for the initial work!

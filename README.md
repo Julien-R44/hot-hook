@@ -133,7 +133,7 @@ Once you use an import, Node.js loads the module into memory and keeps it in cac
 
 This is problematic for hot module reloading.
 
-Previously, with CommonJS (require), we had control over this Node.js cache. We could remove a module from the cache (delete require.cache), and thus a require on this module would force Node.js to fetch the latest version of the module.
+Previously, with CommonJS (require), we had control over this Node.js cache. We could remove a module from the cache (`delete require.cache`), and thus a require on this module would force Node.js to fetch the latest version of the module.
 
 So, how do we do this in ESM? There have been lots of discussions on this topic for a while (https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806). But for now, there's no official solution. However, there is a trick. A trick that causes memory leaks, but they are so minimal that it shouldn't be a problem for most applications. Especially since we use this trick ONLY in development mode.
 
@@ -155,7 +155,7 @@ For this, there's no secret : you will need a process manager. Whenever a file l
 
 So the concept is simple: the manager needs to launch your application as a child process and listen to messages from the child process. If the child process sends a message asking for a full reload, then the manager must kill the child process and restart it.
 
-It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner here[here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
+It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner [here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
 
 ### Hot Hook
 

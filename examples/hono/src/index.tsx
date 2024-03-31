@@ -1,9 +1,6 @@
 import { Hono } from 'hono'
-import { hot } from 'hot-hook'
 import { serve } from '@hono/node-server'
 import { setTimeout } from 'node:timers/promises'
-
-await hot.init({})
 
 /**
  * Let's imagine we have a complex initialization step that takes

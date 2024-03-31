@@ -42,7 +42,6 @@ const watcher = chokidar
 
     debug('Changed %s', realFilePath)
     if (isReloadPath(realFilePath)) {
-      console.log('isReloadPath', realFilePath)
       options.messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
       return
     }

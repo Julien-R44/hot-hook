@@ -1,0 +1,20 @@
+{
+  "name": "@hot-hook/runner",
+  "description": "Runner for applications that use hot-hook",
+  "version": "0.0.0",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "hot-runner": "build/bin/run.js"
+  },
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@adonisjs/ace": "^13.0.0",
+    "execa": "^8.0.1"
+  },
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "ISC",
+  "keywords": []
+}

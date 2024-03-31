@@ -7,9 +7,6 @@
   "files": [
     "build"
   ],
-  "bin": {
-    "hot-runner": "./build/src/runner.js"
-  },
   "exports": {
     ".": "./build/src/hot.js",
     "./loader": "./build/src/loader.js",

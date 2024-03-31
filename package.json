@@ -1,25 +1,11 @@
 {
   "name": "@hot-hook/monorepo",
-  "description": "",
+  "description": "Monorepo for Hot Hook",
   "version": "0.0.0",
-  "main": "index.js",
   "type": "module",
-  "files": [
-    "build"
-  ],
   "scripts": {
-    "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint . --ext=.ts",
-    "format": "prettier --write .",
-    "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
-    "pretest": "npm run lint",
-    "test": "c8 npm run quick:test",
-    "prebuild": "npm run lint && npm run clean",
-    "build": "tsc",
-    "release": "np",
-    "version": "npm run build",
-    "prepublishOnly": "npm run build"
+    "lint": "eslint . --ext=.ts"
   },
   "devDependencies": {
     "@adonisjs/eslint-config": "^1.3.0",

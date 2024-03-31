@@ -29,9 +29,12 @@
     "version": "npm run build",
     "prepublishOnly": "npm run build"
   },
+  "devDependencies": {
+    "@types/picomatch": "^2.3.3"
+  },
   "dependencies": {
     "chokidar": "^3.6.0",
-    "minimatch": "^9.0.4"
+    "picomatch": "^4.0.2"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "ISC",

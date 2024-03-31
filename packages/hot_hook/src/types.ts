@@ -1,3 +1,4 @@
+import picomatch from 'picomatch'
 import { MessagePort } from 'node:worker_threads'
 
 export type MessageChannelMessage =
@@ -7,11 +8,8 @@ export type MessageChannelMessage =
 export interface InitOptions {
   /**
    * An array of globs that will trigger a full server reload when changed.
-   *
-   * You can also pass a function that will receive the changed file path
-   * and return a boolean to decide if the server should reload or not.
    */
-  reload?: string[] | ((path: string) => boolean)
+  reload?: picomatch.Glob
 
   /**
    * onFullReloadAsked is called when a full server reload is requested
@@ -24,7 +22,7 @@ export interface InitOptions {
    * Paths that will not be watched by the hook.
    * @default ['/node_modules/']
    */
-  ignore?: string[]
+  ignore?: picomatch.Glob
 
   /**
    * The project root directory.

@@ -274,4 +274,53 @@ test.group('Loader', () => {
 
     assert.isDefined(result)
   })
+
+  test('even add import.meta.hot to ignored files', async ({ fs, assert }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create(
+      'config/test.js',
+      `
+       if (import.meta.hot) {
+        process.send({ type: 'ok' })
+       }
+       console.log(import.meta.hot)
+       console.log("Hello")
+    `
+    )
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+
+       await hot.init({
+         projectRoot: join(import.meta.dirname, '.'),
+         ignore: ['config/**'],
+       })
+
+       await import('./config/test.js')
+
+       const server = http.createServer(async (request, response) => {
+         const app = await import('./config/test.js')
+         await app.default(request, response)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+    })
+
+    await server.waitForOutput('Server is running')
+    await setTimeout(100)
+
+    const result = await pEvent(server.child, 'message', (message: any) => message?.type === 'ok')
+    assert.isDefined(result)
+  })
 })

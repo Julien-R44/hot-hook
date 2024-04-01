@@ -4,6 +4,9 @@
   "version": "0.0.0",
   "main": "index.js",
   "type": "module",
+  "files": [
+    "build"
+  ],
   "bin": {
     "hot-runner": "build/bin/run.js"
   },
@@ -16,6 +19,6 @@
     "execa": "^8.0.1"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC",
+  "license": "MIT",
   "keywords": []
 }

@@ -1,6 +1,6 @@
 {
   "name": "hot-hook",
-  "description": "",
+  "description": "Easy hot module reloading (HMR) for Node.js and ESM",
   "version": "0.0.1",
   "main": "index.js",
   "type": "module",
@@ -38,8 +38,14 @@
     "picomatch": "^4.0.2"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC",
-  "keywords": [],
+  "license": "MIT",
+  "keywords": [
+    "hmr",
+    "hot",
+    "reload",
+    "esm",
+    "node"
+  ],
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },

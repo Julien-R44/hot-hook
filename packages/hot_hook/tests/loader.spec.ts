@@ -222,4 +222,56 @@ test.group('Loader', () => {
 
     assert.isDefined(result)
   })
+
+  test('dependent files of reload paths should trigger a full reload', async ({ fs, assert }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create(
+      'config/test.js',
+      `
+       import '../app/test.js'
+       console.log("Hello")
+    `
+    )
+    await fs.create('app/test.js', 'console.log("Hello")')
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+       import { setTimeout } from 'node:timers/promises'
+
+       await hot.init({
+         projectRoot: join(import.meta.dirname, '.'),
+         reload: ['config/**/*'],
+       })
+
+       await import('./config/test.js')
+       await setTimeout(100)
+       console.log('Server is running')
+       await setTimeout(2000)
+      `
+    )
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+    })
+
+    await server.waitForOutput('Server is running')
+
+    await fs.create('app/test.js', 'console.log("Hello Updated")')
+    await setTimeout(100)
+
+    const result = await pEvent(
+      server.child,
+      'message',
+      (message: any) =>
+        message?.type === 'hot-hook:full-reload' &&
+        message.path === join(fs.basePath, 'app/test.js')
+    )
+
+    assert.isDefined(result)
+  })
 })

@@ -57,7 +57,8 @@ export class HotHookLoader {
      * to the main thread.
      */
     debug('Changed %s', realFilePath)
-    if (this.#isReloadPath(realFilePath)) {
+    const dependents = this.#dependencyTree.getDependents(realFilePath) || []
+    if ([...dependents, realFilePath].some((path) => this.#isReloadPath(path))) {
       return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
     }
 

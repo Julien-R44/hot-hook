@@ -30,6 +30,8 @@ await hot.init({
 })
 ```
 
+The `hot.init` function internally call [`register`](https://nodejs.org/api/module.html#moduleregisterspecifier-parenturl-options) from `node:module` to hook into the module loading process. This is why you need to call it as early as possible, otherwise modules imported before the call to `hot.init` will not benefit from hot module reloading.
+
 Next, you need to include the types for `import.meta.hot` in your project. To do this, add the following code in a `.d.ts` file or in the `types` property of your `tsconfig.json`.
 
 ```ts
@@ -137,7 +139,7 @@ Previously, with CommonJS (require), we had control over this Node.js cache. We 
 
 So, how do we do this in ESM? There have been lots of discussions on this topic for a while (https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806). But for now, there's no official solution. However, there is a trick. A trick that causes memory leaks, but they are so minimal that it shouldn't be a problem for most applications. Especially since we use this trick ONLY in development mode.
 
-This trick is what Hot Hook uses to do hot module reloading. And it simply involves adding a query parameter to the URL of the imported module. This forces Node.js to load the module anew, thus getting the latest version of the module.
+This trick is what Hot Hook uses to do hot module reloading. And it simply involves adding a query parameter to the URL of the imported module. This forces Node.js to load again the module, thus getting the latest version of the module.
 
 ```ts
 await import('./app.js?v=1')

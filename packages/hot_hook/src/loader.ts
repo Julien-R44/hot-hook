@@ -1,8 +1,9 @@
+import fg from 'fast-glob'
 import chokidar from 'chokidar'
 import picomatch from 'picomatch'
 import { realpath } from 'node:fs/promises'
-import { relative, resolve as pathResolve } from 'node:path'
 import { MessagePort } from 'node:worker_threads'
+import { relative, resolve as pathResolve } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
 import debug from './debug.js'
@@ -21,7 +22,7 @@ export class HotHookLoader {
     this.#projectRoot = options.projectRoot
     this.#messagePort = options.messagePort
 
-    this.#watcher = this.#createWatcher()
+    this.#watcher = this.#createWatcher(options.reload)
     this.#isReloadPathMatcher = picomatch(options.reload || [])
     this.#isPathIgnoredMatcher = picomatch(options.ignore || [])
   }
@@ -71,8 +72,11 @@ export class HotHookLoader {
   /**
    * Create the chokidar watcher instance.
    */
-  #createWatcher() {
-    const watcher = chokidar.watch([])
+  #createWatcher(initialPaths: picomatch.Glob = []) {
+    const arrayPaths = Array.isArray(initialPaths) ? initialPaths : [initialPaths]
+    const entries = fg.sync(arrayPaths, { cwd: this.#projectRoot, absolute: true })
+
+    const watcher = chokidar.watch(entries)
 
     watcher.on('change', this.#onFileChange.bind(this))
     watcher.on('unlink', (relativeFilePath) => {
@@ -168,7 +172,7 @@ export class HotHookLoader {
 }
 
 let loader!: HotHookLoader
-export const initialize: InitializeHook = (data: InitializeHookOptions) => {
+export const initialize: InitializeHook = async (data: InitializeHookOptions) => {
   loader = new HotHookLoader(data)
 }
 export const load: LoadHook = (...args) => loader?.load(...args)

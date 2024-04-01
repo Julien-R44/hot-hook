@@ -71,7 +71,7 @@ We have some examples in the examples folder with different frameworks to help y
 
 - `reload`: An array of glob patterns that specifies which files should trigger a full process reload.
 - `ignore`: An array of glob patterns that specifies which files should not be considered by Hot Hook. By default, ['**/node_modules/**'].
-- `projectRoot`: The path of the project root folder.
+- `projectRoot`: The path of the project root folder. Glob patterns are resolved relative to this path.
 
 ## API
 

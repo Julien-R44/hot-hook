@@ -23,10 +23,9 @@
     "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
-    "build": "tsc",
+    "build": "pnpm clean && tsc",
     "release": "release-it",
-    "prepublish": "pnpm lint && pnpm clean",
-    "prepublishOnly": "pnpm build"
+    "prepublishOnly": "pnpm lint && pnpm build"
   },
   "devDependencies": {
     "@types/picomatch": "^2.3.3"

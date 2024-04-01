@@ -25,5 +25,21 @@
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
-  "keywords": []
+  "keywords": [],
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): @hot-hook/runner@${version}",
+      "tagAnnotation": "v${version}",
+      "tagName": "@hot-hook/runner@${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "@hot-hook/runner@${version}",
+      "web": true
+    }
+  }
 }

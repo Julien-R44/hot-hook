@@ -21,13 +21,12 @@
     "lint": "eslint . --ext=.ts",
     "format": "prettier --write .",
     "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
-    "pretest": "npm run lint",
-    "test": "c8 npm run quick:test",
-    "prebuild": "npm run lint && npm run clean",
+    "pretest": "pnpm lint",
+    "test": "c8 pnpm quick:test",
     "build": "tsc",
     "release": "release-it",
-    "version": "npm run build",
-    "prepublishOnly": "npm run build"
+    "prepublish": "pnpm lint && pnpm clean",
+    "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
     "@types/picomatch": "^2.3.3"

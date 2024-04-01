@@ -11,8 +11,13 @@
     "hot-runner": "build/bin/run.js"
   },
   "scripts": {
+    "clean": "del-cli build",
     "build": "tsc",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint . --ext=.ts",
+    "release": "release-it",
+    "prepublish": "pnpm lint && pnpm clean",
+    "prepublishOnly": "pnpm build"
   },
   "dependencies": {
     "@adonisjs/ace": "^13.0.0",

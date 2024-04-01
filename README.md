@@ -69,9 +69,45 @@ We have some examples in the examples folder with different frameworks to help y
 
 `hot.init` accepts the following options:
 
-- `reload`: An array of glob patterns that specifies which files should trigger a full process reload.
-- `ignore`: An array of glob patterns that specifies which files should not be considered by Hot Hook. By default, ['**/node_modules/**'].
-- `projectRoot`: The path of the project root folder. Glob patterns are resolved relative to this path.
+### `reload`
+
+An array of glob patterns that specifies which files should trigger a full process reload. By default, it's an empty array. Also note that if a file specified in `reload` imports another file that is not in `reload`, and this same file is modified, then the full process reload will be triggered. Let's take an example.
+
+We have the following `reload` configuration:
+
+```ts
+await hot.init({
+  reload: ['config/**']
+})
+```
+
+And we have the following files:
+
+```ts
+// config/database.ts
+import { getPort } from '../app/utils.ts'
+
+export const config = {
+  port: getPort()
+}
+```
+
+```ts
+// app/utils.ts
+export function getPort() {
+  return 8080
+}
+```
+
+If you modify the `app/utils.ts` file, then the `config/database.ts` file will be reloaded, even though it's not in the `reload` configuration. Because `app/utils.ts` is a dependency of `config/database.ts`.
+
+### `ignore`
+
+An array of glob patterns that specifies which files should not be considered by Hot Hook. That means they won't be reloaded when modified. By default, it's `['node_modules/**']`.
+
+### `projectRoot`
+
+The path of the project root folder. Glob patterns are resolved from this path
 
 ## API
 

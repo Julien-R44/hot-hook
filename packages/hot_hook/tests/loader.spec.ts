@@ -323,4 +323,52 @@ test.group('Loader', () => {
     const result = await pEvent(server.child, 'message', (message: any) => message?.type === 'ok')
     assert.isDefined(result)
   })
+
+  test('send invalidated message when file is invalidated', async ({ fs, assert }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module' })
+    await createHandlerFile({ path: 'config/test.js', response: 'Hello' })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+
+       await hot.init({
+         projectRoot: join(import.meta.dirname, '.'),
+       })
+
+       const server = http.createServer(async (request, response) => {
+         const app = await import('./config/test.js')
+         await app.default(request, response)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+    })
+
+    await server.waitForOutput('Server is running')
+    await setTimeout(100)
+
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello')
+
+    createHandlerFile({ path: 'config/test.js', response: 'Hello Updated' })
+
+    const result = await pEvent(
+      server.child,
+      'message',
+      (message: any) =>
+        message?.type === 'hot-hook:invalidated' &&
+        message.paths.includes(join(fs.basePath, 'config/test.js'))
+    )
+
+    assert.isDefined(result)
+  })
 })

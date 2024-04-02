@@ -31,7 +31,6 @@ class Hot {
         const callback = this.#disposeCallbacks.get(url)
         callback?.()
       }
-
     }
   }
 

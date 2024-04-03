@@ -5,7 +5,6 @@
     "dev:tsx": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
   },
   "devDependencies": {
-    "@types/node": "^20.11.17",
     "hot-hook": "workspace:*",
     "@hot-hook/runner": "workspace:*",
     "tsx": "^3.12.2"

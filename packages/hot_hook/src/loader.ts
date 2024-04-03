@@ -3,42 +3,30 @@ import chokidar from 'chokidar'
 import picomatch from 'picomatch'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
-import { relative, resolve as pathResolve, dirname } from 'node:path'
+import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
 import debug from './debug.js'
 import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
+import { Matcher } from './matcher.js'
 
 export class HotHookLoader {
   #projectRoot: string
   #messagePort?: MessagePort
   #watcher: chokidar.FSWatcher
+  #pathIgnoredMatcher: Matcher
   #dependencyTree = new DependencyTree()
-  #isPathIgnoredMatcher: picomatch.Matcher
 
   constructor(options: InitializeHookOptions) {
     this.#projectRoot = dirname(options.root)
     this.#messagePort = options.messagePort
 
     this.#watcher = this.#createWatcher(options.reload)
-    this.#isPathIgnoredMatcher = picomatch(options.ignore || [], {
-      dot: true,
-    })
+    this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, options.ignore)
 
-    this.#dependencyTree.add(options.root)
     this.#watcher.add(options.root)
-  }
-
-  #buildRelativePath(filePath: string) {
-    return relative(this.#projectRoot, filePath)
-  }
-
-  /**
-   * Check if a path should be ignored and not watched.
-   */
-  #isPathIgnored(filePath: string) {
-    return this.#isPathIgnoredMatcher(this.#buildRelativePath(filePath))
+    this.#dependencyTree.add(options.root)
   }
 
   /**
@@ -161,7 +149,7 @@ export class HotHookLoader {
     this.#dependencyTree.addDependency(parentUrl?.pathname, { path: resultPath, reloadable })
     this.#dependencyTree.addDependent(resultPath, parentUrl?.pathname)
 
-    if (this.#isPathIgnored(resultPath)) {
+    if (this.#pathIgnoredMatcher.match(resultPath)) {
       return result
     }
 

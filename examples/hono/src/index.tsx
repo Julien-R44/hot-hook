@@ -27,7 +27,7 @@ console.log('Ready to serve requests')
 const app = new Hono()
 
 app.get('/', async (c) => {
-  const { Home } = await import('./views/home.js')
+  const { Home } = await import('./views/home.js', { with: { hot: 'true' } })
   return c.html(<Home />)
 })
 

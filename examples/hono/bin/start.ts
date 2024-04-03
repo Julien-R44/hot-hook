@@ -1,9 +1,8 @@
 import { hot } from 'hot-hook'
-import { join } from 'node:path'
 
 await hot.init({
-  projectRoot: join(import.meta.dirname, '..'),
-  reload: ['src/index.tsx'],
+  root: import.meta.filename,
+  ignore: ['../../node_modules/**'],
 })
 
 await import('../src/index.js')

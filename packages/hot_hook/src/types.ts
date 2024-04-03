@@ -25,12 +25,12 @@ export interface InitOptions {
   ignore?: picomatch.Glob
 
   /**
-   * The project root directory.
+   * Path to the root file of the application.
    */
-  projectRoot: string
+  root: string
 }
 
-export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'reload' | 'projectRoot'> & {
+export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'root' | 'reload'> & {
   /**
    * The message port to communicate with the parent thread.
    */

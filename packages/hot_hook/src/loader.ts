@@ -3,7 +3,7 @@ import chokidar from 'chokidar'
 import picomatch from 'picomatch'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
-import { relative, resolve as pathResolve } from 'node:path'
+import { relative, resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
 import debug from './debug.js'
@@ -15,16 +15,19 @@ export class HotHookLoader {
   #messagePort?: MessagePort
   #watcher: chokidar.FSWatcher
   #dependencyTree = new DependencyTree()
-  #isReloadPathMatcher: picomatch.Matcher
   #isPathIgnoredMatcher: picomatch.Matcher
 
   constructor(options: InitializeHookOptions) {
-    this.#projectRoot = options.projectRoot
+    this.#projectRoot = dirname(options.root)
     this.#messagePort = options.messagePort
 
     this.#watcher = this.#createWatcher(options.reload)
-    this.#isReloadPathMatcher = picomatch(options.reload || [])
-    this.#isPathIgnoredMatcher = picomatch(options.ignore || [])
+    this.#isPathIgnoredMatcher = picomatch(options.ignore || [], {
+      dot: true,
+    })
+
+    this.#dependencyTree.add(options.root)
+    this.#watcher.add(options.root)
   }
 
   #buildRelativePath(filePath: string) {
@@ -39,13 +42,6 @@ export class HotHookLoader {
   }
 
   /**
-   * Check if a path should trigger a full reload.
-   */
-  #isReloadPath(filePath: string) {
-    return this.#isReloadPathMatcher(this.#buildRelativePath(filePath))
-  }
-
-  /**
    * When a file changes, invalidate it and its dependents.
    */
   async #onFileChange(relativeFilePath: string) {
@@ -56,9 +52,8 @@ export class HotHookLoader {
      * If the file is in the reload list, we send a full reload message
      * to the main thread.
      */
-    debug('Changed %s', realFilePath)
-    const dependents = this.#dependencyTree.getDependents(realFilePath) || []
-    if ([...dependents, realFilePath].some((path) => this.#isReloadPath(path))) {
+    const isReloadable = this.#dependencyTree.isReloadable(realFilePath)
+    if (!isReloadable) {
       return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
     }
 
@@ -105,7 +100,12 @@ export class HotHookLoader {
     import.meta.hot.decline = async () => {
       const { hot } = await import('hot-hook');
       hot.decline(import.meta.url);
-    };`
+    };
+
+    import.meta.hot.boundary = () => {
+      return { with: { hot: 'true' } };
+    };
+    `
 
     /**
      * By minifying the code we can avoid adding a new line to the source
@@ -126,6 +126,10 @@ export class HotHookLoader {
     if (parsedUrl.searchParams.has('hot-hook')) {
       parsedUrl.searchParams.delete('hot-hook')
       url = parsedUrl.href
+    }
+
+    if (context.importAttributes.hot) {
+      delete context.importAttributes.hot
     }
 
     const result = await nextLoad(url, context)
@@ -149,25 +153,24 @@ export class HotHookLoader {
     }
 
     const result = await nextResolve(specifier, context)
-
     const resultUrl = new URL(result.url)
     const resultPath = resultUrl.pathname
-    if (resultUrl.protocol !== 'file:' || this.#isPathIgnored(resultPath)) {
+    if (resultUrl.protocol !== 'file:') {
       return result
     }
 
-    if (!this.#dependencyTree.has(resultPath)) {
-      debug('Watching %s', resultPath)
-      this.#dependencyTree.add(resultPath)
-      this.#watcher.add(resultPath)
+    const reloadable = context.importAttributes.hot === 'true' ? true : false
+    this.#dependencyTree.addDependency(parentUrl?.pathname, { path: resultPath, reloadable })
+    this.#dependencyTree.addDependent(resultPath, parentUrl?.pathname)
+
+    if (this.#isPathIgnored(resultPath)) {
+      return result
     }
 
-    const parentPath = parentUrl?.pathname
-    if (parentPath) {
-      this.#dependencyTree.addDependent(resultPath, parentPath)
-    }
+    this.#watcher.add(resultPath)
+    const version = this.#dependencyTree.getVersion(resultPath).toString()
+    resultUrl.searchParams.set('hot-hook', version)
 
-    resultUrl.searchParams.set('hot-hook', this.#dependencyTree.getVersion(resultPath)!.toString())
     return { ...result, url: resultUrl.href }
   }
 }

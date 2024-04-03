@@ -3,6 +3,7 @@ import chokidar from 'chokidar'
 import picomatch from 'picomatch'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
+import { fileURLToPath } from 'node:url'
 import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
@@ -140,14 +141,16 @@ export class HotHookLoader {
 
     const result = await nextResolve(specifier, context)
     const resultUrl = new URL(result.url)
-    const resultPath = resultUrl.pathname
     if (resultUrl.protocol !== 'file:') {
       return result
     }
 
+    const resultPath = fileURLToPath(resultUrl)
+    const parentPath = fileURLToPath(parentUrl)
+
     const reloadable = context.importAttributes.hot === 'true' ? true : false
-    this.#dependencyTree.addDependency(parentUrl?.pathname, { path: resultPath, reloadable })
-    this.#dependencyTree.addDependent(resultPath, parentUrl?.pathname)
+    this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
+    this.#dependencyTree.addDependent(resultPath, parentPath)
 
     if (this.#pathIgnoredMatcher.match(resultPath)) {
       return result

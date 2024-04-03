@@ -46,7 +46,7 @@ Next, you need to include the types for `import.meta.hot` in your project. To do
 
 ## Usage
 
-Once Hot Hook is initialized in your application. Every time you want HMR working for a specific module and their dependencies, you need to dynamic import `await import` the module and make sure this `await import` is called often enough to reload the module when needed.
+Once Hot Hook is initialized in your application. Every time you want HMR working for a specific module and their dependencies, you need to dynamic import (`await import`) the module and make sure this `await import` is called often enough to reload the module when needed.
 
 In the case of an HTTP server, you would typically dynamic import your controller or route handler module. So every time a request is made, Hot Hook will be able to reload the module (and its dependencies) if it has changed. 
 
@@ -173,6 +173,33 @@ For this, there's no secret : you will need a process manager. Whenever a file l
 So the concept is simple: the manager needs to launch your application as a child process and listen to messages from the child process. If the child process sends a message asking for a full reload, then the manager must kill the child process and restart it.
 
 It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner [here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
+
+### Boundary
+
+"HMR boundaries" are an important concept in Hot Hook. The so-called "boundary modules" are modules that are marked as being hot reloadable using the `import.meta.hot?.boundary` attribute during their importation :
+
+```ts
+await import('./users_controller.js', import.meta.hot?.boundary)
+```
+
+By importing a module this way, you are essentially creating a kind of boundary. This module and all the modules imported by it will be hot reloadable.
+
+Let's take a more complete example. Essentially, Hot Hook has a very simple algorithm to determine whether the file you just edited is hot reloadable or not.
+
+- Starting from the modified file, Hot Hook will go up the whole dependency tree until it can reach the root file (the entry point of the application/the executed script).
+- If Hot Hook can reach the root file without encountering any boundary file, then it means we need to do a full reload of the server.
+- If all paths to reach the root file go through boundary files, then it means we can hot reload the modified file.
+
+Example with this typical tree diagram of an HTTP application:
+
+![Diagram](./assets/diagram.png)
+
+In this example, `users_controller.ts` and `posts_controller.ts` are boundary files. If you modify one of these two files, then Hot Hook can hot reload them. Now let's consider other cases.
+
+- `app/models/posts.ts`. It is hot reloadable, because the only path to reach the root file goes through `posts_controller.ts`, which is a boundary file.
+- The same goes for `app/services/post.ts`.
+- `utils/helpers.ts` is also hot reloadable because the only path to reach the root file goes through `users_controller.ts`, which is a boundary file.
+- Now, more interestingly, `app/models/user.ts` is NOT hot reloadable. Because there are TWO paths to reach the root file. The first goes through `users_controller.ts`, which is a boundary file, but the second goes through `providers/database.ts`, which is not a boundary file. Therefore, Hot Hook cannot hot reload `app/models/user.ts`. A modification to this file would require a full reload of the server. If `providers/database.ts` did not import `app/models/user.ts`, then `app/models/user.ts` would be hot reloadable.
 
 ### Hot Hook
 

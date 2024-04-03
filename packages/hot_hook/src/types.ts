@@ -20,7 +20,7 @@ export interface InitOptions {
 
   /**
    * Paths that will not be watched by the hook.
-   * @default `['/node_modules/']``
+   * @default ['/node_modules/']
    */
   ignore?: picomatch.Glob
 

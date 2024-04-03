@@ -23,6 +23,7 @@ Once installed, you need to add the following code as early as possible in your 
 import { hot } from 'hot-hook'
 
 await hot.init({
+  root: import.meta.filename,
   // options
 })
 ```
@@ -45,20 +46,26 @@ Next, you need to include the types for `import.meta.hot` in your project. To do
 
 ## Usage
 
-Once Hot Hook is initialized in your application, you will need to use `await import()` where you want to benefit from hot module reloading. To understand why, read the "How it works?" section below.
+Once Hot Hook is initialized in your application. Every time you want HMR working for a specific module and their dependencies, you need to dynamic import `await import` the module and make sure this `await import` is called often enough to reload the module when needed.
+
+In the case of an HTTP server, you would typically dynamic import your controller or route handler module. So every time a request is made, Hot Hook will be able to reload the module (and its dependencies) if it has changed. 
+
+Also note that you must use `import.meta.hot?.boundary` when importing the module. This is a special [import](https://nodejs.org/api/esm.html#import-attributes) attributes that allows to create what we call an [HMR boundary](#boundary).
+
+Example :
 
 ```ts
 import * as http from 'http'
 
 const server = http.createServer(async (request, response) => {
-  const app = await import('./app.js')
+  const app = await import('./app.js', import.meta.hot?.boundary)
   app.default(request, response)
 })
 
 server.listen(8080)
 ```
 
-This is a simple example, but above, the app.js module will always be reloaded with the latest version every time you modify the file. However, the http server will not be restarted.
+This is a simple example, the `app.js` module will always be reloaded with the latest version every time you modify the file and make a new request. However, the http server will not be restarted.
 
 We have some examples in the examples folder with different frameworks to help you set up Hot Hook in your application. If you are using [AdonisJS](https://adonisjs.com/): it's your lucky day. Hot hook was the reason why I created this library and we gonna have a complete integration with AdonisJS soon.
 
@@ -66,45 +73,20 @@ We have some examples in the examples folder with different frameworks to help y
 
 `hot.init` accepts the following options:
 
-### `reload`
 
-An array of glob patterns that specifies which files should trigger a full process reload. By default, it's an empty array. Also note that if a file specified in `reload` imports another file that is not in `reload`, and this same file is modified, then the full process reload will be triggered. Let's take an example.
+### `root`
 
-We have the following `reload` configuration:
+The path of the root file. This is the entry point of your application. Glob patterns are resolved from the directory of this file.
 
 ```ts
 await hot.init({
-  reload: ['config/**']
+  root: import.meta.filename
 })
 ```
-
-And we have the following files:
-
-```ts
-// config/database.ts
-import { getPort } from '../app/utils.ts'
-
-export const config = {
-  port: getPort()
-}
-```
-
-```ts
-// app/utils.ts
-export function getPort() {
-  return 8080
-}
-```
-
-If you modify the `app/utils.ts` file, then the `config/database.ts` file will be reloaded, even though it's not in the `reload` configuration. Because `app/utils.ts` is a dependency of `config/database.ts`.
 
 ### `ignore`
 
 An array of glob patterns that specifies which files should not be considered by Hot Hook. That means they won't be reloaded when modified. By default, it's `['node_modules/**']`.
-
-### `projectRoot`
-
-The path of the project root folder. Glob patterns are resolved from this path
 
 ## API
 

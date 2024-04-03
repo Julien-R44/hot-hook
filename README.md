@@ -207,7 +207,8 @@ With all that, Hot Hook is ultimately quite simple:
 
 - Intercept imports with a hook
 - Collect all imported files and build a dependency tree
-- If a file changes, then increase the query parameter of the imported module's URL
+- If a file changes, check if it is hot reloadable by applying the algorithm described [above](#boundary)
+- If it is hot reloadable, then add a `version` query parameter to the URL of the file
 - Thus, the next time the module is imported, Node.js will load the latest version of the module
 
 Simple, lightweight, and efficient.

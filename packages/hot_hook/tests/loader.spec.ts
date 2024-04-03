@@ -18,7 +18,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '..'),
+         root: import.meta.filename,
        })
 
        const server = http.createServer(async (request, response) => {
@@ -58,7 +58,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
          reload: ['app.js'],
        })
 
@@ -104,7 +104,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
          ignore: ['app.js'],
        })
 
@@ -145,7 +145,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
        })
 
        const server = http.createServer(async (request, response) => {
@@ -186,7 +186,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
          reload: ['app.js', 'server.js', 'config/**/*'],
        })
 
@@ -243,7 +243,7 @@ test.group('Loader', () => {
        import { setTimeout } from 'node:timers/promises'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
          reload: ['config/**/*'],
        })
 
@@ -296,7 +296,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
          ignore: ['config/**'],
        })
 
@@ -336,7 +336,7 @@ test.group('Loader', () => {
        import { join } from 'node:path'
 
        await hot.init({
-         projectRoot: join(import.meta.dirname, '.'),
+         root: import.meta.filename,
        })
 
        const server = http.createServer(async (request, response) => {

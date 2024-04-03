@@ -1,63 +1,182 @@
+/**
+ * Represent a file node in the dependency tree.
+ */
+interface FileNode {
+  /**
+   * Absolute path to the file
+   */
+  path: string
+
+  /**
+   * Whether the file is marked as reloadable or not
+   */
+  reloadable: boolean
+
+  /**
+   * Set of files imported by this file
+   */
+  dependencies: Set<FileNode>
+
+  /**
+   * Set of files importing this file
+   */
+  dependents: Set<FileNode>
+
+  /**
+   * Set of files that are parents of this file
+   */
+  parents: Set<FileNode> | null
+
+  /**
+   * Version of the file. Incremented when the file is invalidated
+   */
+  version: number
+}
+
 export default class DependencyTree {
-  #versions = new Map<string, number>()
-  #dependents = new Map<string, Set<string>>()
+  #tree!: FileNode
+  #pathMap: Map<string, FileNode> = new Map()
 
-  add(filePath: string) {
-    if (!this.#versions.has(filePath)) {
-      this.#versions.set(filePath, 1)
-      this.#dependents.set(filePath, new Set())
+  add(path: string): void {
+    this.#tree = {
+      path,
+      version: 0,
+      parents: null,
+      reloadable: false,
+      dependents: new Set(),
+      dependencies: new Set(),
     }
+
+    this.#pathMap.set(path, this.#tree)
   }
 
-  remove(filePath: string) {
-    if (this.#versions.has(filePath)) {
-      this.#versions.delete(filePath)
-      this.#dependents.delete(filePath)
+  /**
+   * Get the version of a file
+   */
+  getVersion(path: string): number {
+    const node = this.#pathMap.get(path)
+    if (!node) throw new Error(`Node ${path} does not exist`)
+
+    return node.version
+  }
+
+  /**
+   * Add a dependency to a file
+   */
+  addDependency(parentPath: string, dependency: { path: string; reloadable?: boolean }): void {
+    let parentNode = this.#pathMap.get(parentPath)
+    if (!parentNode) throw new Error(`Parent node ${parentPath} does not exist`)
+
+    let childNode = this.#pathMap.get(dependency.path)
+    if (!childNode) {
+      childNode = {
+        version: 0,
+        path: dependency.path,
+        parents: new Set(),
+        dependents: new Set(),
+        dependencies: new Set(),
+        reloadable: dependency.reloadable || false,
+      }
+      this.#pathMap.set(dependency.path, childNode)
+    } else {
+      childNode.reloadable = dependency.reloadable || false
     }
+
+    childNode.parents?.add(parentNode)
+    parentNode.dependencies.add(childNode)
   }
 
-  has(filePath: string) {
-    return this.#versions.has(filePath)
+  /**
+   * Add a dependent to a file
+   */
+  addDependent(dependentPath: string, parentPath: string): void {
+    let dependentNode = this.#pathMap.get(dependentPath)
+    if (!dependentNode) throw new Error(`Dependent node ${dependentPath} does not exist`)
+
+    let parentNode = this.#pathMap.get(parentPath)
+    if (!parentNode) throw new Error(`Parent node ${parentPath} does not exist`)
+
+    dependentNode.dependents.add(parentNode)
   }
 
-  getVersion(filePath: string) {
-    return this.#versions.get(filePath)
-  }
-
-  invalidate(filePath: string) {
-    if (this.#versions.has(filePath)) {
-      this.#versions.set(filePath, this.getVersion(filePath)! + 1)
-    }
-  }
-
-  invalidateFileAndDependents(filePath: string) {
+  /**
+   * Invalidate a file and all its dependents
+   */
+  invalidateFileAndDependents(filePath: string): Set<string> {
     const invalidatedFiles = new Set<string>()
     const queue = [filePath]
     while (queue.length > 0) {
       const currentPath = queue.pop()!
       if (!invalidatedFiles.has(currentPath)) {
-        this.invalidate(currentPath)
+        const node = this.#pathMap.get(currentPath)
+        if (!node) throw new Error(`Node ${currentPath} does not exist`)
+        node.version++
         invalidatedFiles.add(currentPath)
-        queue.push(...this.getDependents(currentPath)!)
+        queue.push(...Array.from(node.dependents).map((n) => n.path))
       }
     }
 
     return invalidatedFiles
   }
 
-  getDependents(filePath: string) {
-    if (this.#dependents.has(filePath)) {
-      return this.#dependents.get(filePath)
+  /**
+   * Remove a file from the dependency tree
+   */
+  remove(path: string): void {
+    const node = this.#pathMap.get(path)
+    if (!node) throw new Error(`Node ${path} does not exist`)
+
+    if (node.parents) {
+      for (const parent of node.parents) {
+        parent.dependencies.delete(node)
+      }
     }
 
-    return new Set<string>()
+    if (node.dependents) {
+      for (const dependent of node.dependents) {
+        dependent.parents?.delete(node)
+      }
+    }
+
+    this.#pathMap.delete(path)
   }
 
-  addDependent(filePath: string, dependentFilePath: string) {
-    if (this.#dependents.has(filePath)) {
-      this.#dependents.get(filePath)!.add(dependentFilePath)
-    } else {
-      throw new Error('Adding dependency not tracked in tree. Likely a bug in the library.')
+  /**
+   * Check if a file is reloadable.
+   * Basically the algorithm is :
+   * - For a given file, we will go up the whole dependency tree until we can reach the ROOT file
+   *  = the entry point of the application/the executed script
+   * - If we can reach the ROOT file without encountering any reloadable file, then it means we
+   *  need to do a FULL RELOAD.
+   * - If all paths to reach the ROOT file go through reloadable files, then it means we can do HMR !
+   */
+  isReloadable(path: string): boolean {
+    const node = this.#pathMap.get(path)
+    if (!node) throw new Error(`Node ${path} does not exist`)
+
+    const checkPathToRoot = (currentNode: FileNode, visited: Set<string> = new Set()): boolean => {
+      if (currentNode.reloadable) {
+        return true
+      }
+
+      if (visited.has(currentNode.path)) {
+        return true
+      }
+
+      visited.add(currentNode.path)
+
+      if (!currentNode.parents || currentNode.parents.size === 0) {
+        return false
+      }
+
+      for (const parent of currentNode.parents) {
+        if (!checkPathToRoot(parent, new Set(visited))) return false
+      }
+
+      return true
     }
+
+    const result = checkPathToRoot(node)
+    return result
   }
 }

@@ -55,9 +55,9 @@ class Hot {
       transferList: [port2],
       data: {
         messagePort: port2,
-        reload: this.#options.reload,
+        root: this.#options.root,
         ignore: this.#options.ignore,
-        projectRoot: this.#options.projectRoot,
+        reload: this.#options.reload,
       } satisfies InitializeHookOptions,
     })
 

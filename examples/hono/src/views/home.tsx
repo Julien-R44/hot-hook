@@ -1,4 +1,5 @@
 import { FC } from 'hono/jsx'
+import { Button } from '../components/button'
 
 /**
  * Try updating the return value of this component and refreshing the page.
@@ -8,7 +9,10 @@ import { FC } from 'hono/jsx'
 export const Home: FC = (props) => {
   return (
     <html>
-      <body>Hello world</body>
+      <body>
+        <p>Hello</p>
+        <Button />
+      </body>
     </html>
   )
 }

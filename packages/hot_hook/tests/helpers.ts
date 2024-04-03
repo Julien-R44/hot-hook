@@ -54,8 +54,8 @@ export function runProcess(scriptPath: string, options?: NodeOptions) {
   const child = execaNode(scriptPath, { nodeOptions: [], buffer: false, ...options })
   activeTest.cleanup(() => void child.kill())
 
-  // child.stdout?.pipe(process.stdout)
-  // child.stderr?.pipe(process.stderr)
+  child.stdout?.pipe(process.stdout)
+  child.stderr?.pipe(process.stderr)
 
   return {
     child,

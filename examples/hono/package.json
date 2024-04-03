@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
+    "dev:tsnode": "hot-runner --node-args=\"--import=./tsnode.esm.js\" bin/start.ts",
+    "dev:tsx": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",

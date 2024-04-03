@@ -102,9 +102,7 @@ export class HotHookLoader {
       hot.decline(import.meta.url);
     };
 
-    import.meta.hot.boundary = () => {
-      return { with: { hot: 'true' } };
-    };
+    import.meta.hot.boundary = { with: { hot: 'true' } };
     `
 
     /**

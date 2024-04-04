@@ -3,9 +3,8 @@ import DependencyTree from '../src/dependency_tree.js'
 
 test.group('Dependency tree', () => {
   test('basic scenario', ({ assert }) => {
-    const tree = new DependencyTree()
+    const tree = new DependencyTree({ root: 'app.ts' })
 
-    tree.add('app.ts')
     tree.addDependency('app.ts', { path: 'start/index.ts' })
     tree.addDependency('app.ts', { path: 'providers/database_provider.ts' })
     tree.addDependency('start/index.ts', {

@@ -1,6 +1,4 @@
-import fg from 'fast-glob'
 import chokidar from 'chokidar'
-import picomatch from 'picomatch'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
 import { fileURLToPath } from 'node:url'
@@ -8,26 +6,29 @@ import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
 import debug from './debug.js'
+import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
-import { Matcher } from './matcher.js'
 
 export class HotHookLoader {
   #projectRoot: string
   #messagePort?: MessagePort
   #watcher: chokidar.FSWatcher
   #pathIgnoredMatcher: Matcher
-  #dependencyTree = new DependencyTree()
+  #dependencyTree: DependencyTree
+  #hardcodedBoundaryMatcher: Matcher
 
   constructor(options: InitializeHookOptions) {
     this.#projectRoot = dirname(options.root)
     this.#messagePort = options.messagePort
 
-    this.#watcher = this.#createWatcher(options.reload)
+    this.#watcher = this.#createWatcher().add(options.root)
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, options.ignore)
+    this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, options.boundaries)
 
-    this.#watcher.add(options.root)
-    this.#dependencyTree.add(options.root)
+    this.#dependencyTree = new DependencyTree({
+      root: options.root,
+    })
   }
 
   /**
@@ -57,11 +58,8 @@ export class HotHookLoader {
   /**
    * Create the chokidar watcher instance.
    */
-  #createWatcher(initialPaths: picomatch.Glob = []) {
-    const arrayPaths = Array.isArray(initialPaths) ? initialPaths : [initialPaths]
-    const entries = fg.sync(arrayPaths, { cwd: this.#projectRoot, absolute: true })
-
-    const watcher = chokidar.watch(entries)
+  #createWatcher() {
+    const watcher = chokidar.watch([])
 
     watcher.on('change', this.#onFileChange.bind(this))
     watcher.on('unlink', (relativeFilePath) => {
@@ -148,7 +146,9 @@ export class HotHookLoader {
     const resultPath = fileURLToPath(resultUrl)
     const parentPath = fileURLToPath(parentUrl)
 
-    const reloadable = context.importAttributes.hot === 'true' ? true : false
+    const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
+    const reloadable = context.importAttributes.hot === 'true' ? true : isHardcodedBoundary
+
     this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
     this.#dependencyTree.addDependent(resultPath, parentPath)
 

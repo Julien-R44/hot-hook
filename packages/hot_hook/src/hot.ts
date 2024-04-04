@@ -57,7 +57,7 @@ class Hot {
         messagePort: port2,
         root: this.#options.root,
         ignore: this.#options.ignore,
-        reload: this.#options.reload,
+        boundaries: this.#options.boundaries,
       } satisfies InitializeHookOptions,
     })
 

@@ -1,4 +1,3 @@
-import picomatch from 'picomatch'
 import { MessagePort } from 'node:worker_threads'
 
 export type MessageChannelMessage =
@@ -6,11 +5,6 @@ export type MessageChannelMessage =
   | { type: 'hot-hook:invalidated'; paths: string[] }
 
 export interface InitOptions {
-  /**
-   * An array of globs that will trigger a full server reload when changed.
-   */
-  reload?: picomatch.Glob
-
   /**
    * onFullReloadAsked is called when a full server reload is requested
    * by the hook. You should use this to kill the current process and
@@ -22,15 +16,21 @@ export interface InitOptions {
    * Paths that will not be watched by the hook.
    * @default ['/node_modules/']
    */
-  ignore?: picomatch.Glob
+  ignore?: string[]
 
   /**
    * Path to the root file of the application.
    */
   root: string
+
+  /**
+   * Files that will create an HMR boundary. This is equivalent of importing
+   * the module with `import.meta.hot.boundary` in the module.
+   */
+  boundaries?: string[]
 }
 
-export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'root' | 'reload'> & {
+export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'root' | 'boundaries'> & {
   /**
    * The message port to communicate with the parent thread.
    */

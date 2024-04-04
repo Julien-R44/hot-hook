@@ -52,6 +52,9 @@ In the case of an HTTP server, you would typically dynamic import your controlle
 
 Also note that you must use `import.meta.hot?.boundary` when importing the module. This is a special [import](https://nodejs.org/api/esm.html#import-attributes) attributes that allows to create what we call an [HMR boundary](#boundary).
 
+> [!TIP]
+> If using `import.meta.hot?.boundary` is not of your taste, you can also hardcode the list of files that you want to be hot reloadable in the `hot.init` options using glob patterns in the `boundaries` option.
+
 Example :
 
 ```ts
@@ -87,6 +90,18 @@ await hot.init({
 ### `ignore`
 
 An array of glob patterns that specifies which files should not be considered by Hot Hook. That means they won't be reloaded when modified. By default, it's `['node_modules/**']`.
+
+### `boundaries`
+
+An array of glob patterns that specifies which files should be considered as HMR boundaries. This is useful when you don't want to use `import.meta.hot?.boundary` in your code.
+
+```ts
+await hot.init({
+  boundaries: [
+    './app/**/controllers/*.ts'
+  ]
+})
+```
 
 ## API
 

@@ -52,4 +52,19 @@ test.group('Matcher', () => {
     assert.isTrue(matches.every((match) => matcher.match(match)))
     assert.isFalse(notMatches.some((match) => matcher.match(match)))
   })
+
+  test('works with parent directory', ({ assert }) => {
+    const matcher = new Matcher('/home/foo/bar', ['../config/**'])
+
+    const matches = ['/home/foo/config/index.js', '/home/foo/config/bar/index.js']
+
+    const notMatches = [
+      '/home/config/index.js',
+      '/home/foo/bar/config/index.js',
+      '/home/foo/bar/config/test/index.js',
+    ]
+
+    assert.isTrue(matches.every((match) => matcher.match(match)))
+    assert.isFalse(notMatches.some((match) => matcher.match(match)))
+  })
 })

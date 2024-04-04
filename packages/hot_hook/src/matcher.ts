@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import picomatch from 'picomatch'
 
 export class Matcher {
@@ -6,7 +7,14 @@ export class Matcher {
 
   constructor(rootDirectory: string, patterns: picomatch.Glob = []) {
     this.#rootDirectory = rootDirectory
-    this.#matcher = picomatch(patterns || [], { dot: true })
+
+    patterns = Array.isArray(patterns) ? patterns : [patterns]
+    const absolutePatterns = patterns.map((pattern) => {
+      if (pattern.startsWith('../')) return resolve(rootDirectory, pattern)
+      return pattern
+    })
+
+    this.#matcher = picomatch(absolutePatterns || [], { dot: true })
   }
 
   /**

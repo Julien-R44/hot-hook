@@ -46,7 +46,7 @@ export class Serve extends BaseCommand {
   /**
    * Starts the HTTP server
    */
-  #startHTTPServer(mode: 'blocking' | 'nonblocking') {
+  #startHTTPServer() {
     this.#httpServer = runNode(process.cwd(), {
       script: this.script,
       nodeArgs: this.nodeArgs,
@@ -67,14 +67,10 @@ export class Serve extends BaseCommand {
 
     this.#httpServer
       .then(() => {
-        if (mode !== 'nonblocking') {
-          this.#log('Underlying HTTP server closed. Still watching for changes')
-        }
+        this.#log(`${this.script} exited.`)
       })
       .catch(() => {
-        if (mode !== 'nonblocking') {
-          this.#log('Underlying HTTP server died. Still watching for changes')
-        }
+        this.#log(`${this.colors.red(this.script + ' crashed.')}`)
       })
   }
 
@@ -83,8 +79,8 @@ export class Serve extends BaseCommand {
    */
   async run() {
     this.#clearScreen()
-    this.#log(`Starting '${this.script}'`)
-    this.#startHTTPServer('nonblocking')
+    this.#log(`Starting ${this.colors.green(this.script)}`)
+    this.#startHTTPServer()
 
     this.#onReloadAsked = (path) => {
       this.#clearScreen()
@@ -94,7 +90,7 @@ export class Serve extends BaseCommand {
 
       this.#httpServer?.removeAllListeners()
       this.#httpServer?.kill('SIGKILL')
-      this.#startHTTPServer('blocking')
+      this.#startHTTPServer()
     }
 
     this.#onFileInvalidated = (paths) => {

@@ -1,6 +1,8 @@
+import { relative } from 'node:path'
+import { runNode } from './helpers.js'
+
 import { BaseCommand, args, flags } from '@adonisjs/ace'
 import { type ExecaChildProcess } from 'execa'
-import { runNode } from './helpers.js'
 
 export class Serve extends BaseCommand {
   static commandName = 'serve'
@@ -22,7 +24,8 @@ export class Serve extends BaseCommand {
   declare scriptArgs: string[]
 
   #httpServer?: ExecaChildProcess<string>
-  #onReloadAsked?: () => void
+  #onReloadAsked?: (updatedFile: string) => void
+  #onFileInvalidated?: (invalidatedFiles: string[]) => void
 
   /**
    * Conditionally clear the terminal screen
@@ -31,6 +34,13 @@ export class Serve extends BaseCommand {
     if (this.clearScreen) {
       process.stdout.write('\u001Bc')
     }
+  }
+
+  /**
+   * Log messages with hot-runner prefix
+   */
+  #log(message: string) {
+    this.logger.log(`${this.colors.blue('[hot-runner]')} ${message}`)
   }
 
   /**
@@ -43,23 +53,27 @@ export class Serve extends BaseCommand {
       scriptArgs: this.scriptArgs,
     })
 
-    this.#httpServer.on('message', async (message) => {
+    this.#httpServer.on('message', async (message: any) => {
       if (typeof message !== 'object') return
 
       if ('type' in message && message.type === 'hot-hook:full-reload') {
-        this.#onReloadAsked?.()
+        this.#onReloadAsked?.(message.path)
+      }
+
+      if ('type' in message && message.type === 'hot-hook:invalidated') {
+        this.#onFileInvalidated?.(message.paths)
       }
     })
 
     this.#httpServer
       .then(() => {
         if (mode !== 'nonblocking') {
-          this.logger.info('Underlying HTTP server closed. Still watching for changes')
+          this.#log('Underlying HTTP server closed. Still watching for changes')
         }
       })
       .catch(() => {
         if (mode !== 'nonblocking') {
-          this.logger.info('Underlying HTTP server died. Still watching for changes')
+          this.#log('Underlying HTTP server died. Still watching for changes')
         }
       })
   }
@@ -69,15 +83,27 @@ export class Serve extends BaseCommand {
    */
   async run() {
     this.#clearScreen()
-    this.logger.info('starting HTTP server...')
+    this.#log(`Starting '${this.script}'`)
     this.#startHTTPServer('nonblocking')
 
-    this.#onReloadAsked = () => {
+    this.#onReloadAsked = (path) => {
       this.#clearScreen()
-      this.logger.info('Full reload requested. Restarting HTTP server...')
+
+      const relativePath = relative(process.cwd(), path)
+      this.#log(`${this.colors.green(relativePath)} changed. Restarting.`)
+
       this.#httpServer?.removeAllListeners()
       this.#httpServer?.kill('SIGKILL')
       this.#startHTTPServer('blocking')
+    }
+
+    this.#onFileInvalidated = (paths) => {
+      this.#clearScreen()
+
+      const updatedFile = paths[0]
+      const relativePath = relative(process.cwd(), updatedFile)
+
+      this.#log(`Invalidating ${this.colors.green(relativePath)} and its dependents`)
     }
   }
 

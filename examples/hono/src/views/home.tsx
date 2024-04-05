@@ -1,5 +1,5 @@
 import { FC } from 'hono/jsx'
-import { Button } from '../components/button'
+import { Button } from '../components/button.js'
 
 /**
  * Try updating the return value of this component and refreshing the page.

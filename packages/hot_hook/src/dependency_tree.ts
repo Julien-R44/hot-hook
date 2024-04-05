@@ -65,7 +65,7 @@ export default class DependencyTree {
    */
   addDependency(parentPath: string, dependency: { path: string; reloadable?: boolean }): void {
     let parentNode = this.#pathMap.get(parentPath)
-    if (!parentNode) throw new Error(`Parent node ${parentPath} does not exist`)
+    if (!parentNode) return
 
     let childNode = this.#pathMap.get(dependency.path)
     if (!childNode) {
@@ -91,10 +91,10 @@ export default class DependencyTree {
    */
   addDependent(dependentPath: string, parentPath: string): void {
     let dependentNode = this.#pathMap.get(dependentPath)
-    if (!dependentNode) throw new Error(`Dependent node ${dependentPath} does not exist`)
+    if (!dependentNode) return
 
     let parentNode = this.#pathMap.get(parentPath)
-    if (!parentNode) throw new Error(`Parent node ${parentPath} does not exist`)
+    if (!parentNode) return
 
     dependentNode.dependents.add(parentNode)
   }

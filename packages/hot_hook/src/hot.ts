@@ -23,6 +23,7 @@ class Hot {
       if (this.#hasOneDeclinedPath(message.paths)) {
         process.send?.({ type: 'hot-hook:full-reload', paths: message.paths })
         this.#options.onFullReloadAsked?.()
+        return
       } else {
         process.send?.({ type: 'hot-hook:invalidated', paths: message.paths })
       }

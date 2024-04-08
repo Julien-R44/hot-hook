@@ -9,10 +9,12 @@ export class Matcher {
     this.#rootDirectory = rootDirectory
 
     patterns = Array.isArray(patterns) ? patterns : [patterns]
-    const absolutePatterns = patterns.map((pattern) => {
-      if (pattern.startsWith('../')) return resolve(rootDirectory, pattern)
-      return pattern
-    })
+    const absolutePatterns = patterns
+      .map((pattern) => {
+        if (pattern.startsWith('../')) return resolve(rootDirectory, pattern)
+        return pattern
+      })
+      .map((path) => path.replace(/\\/g, '/'))
 
     this.#matcher = picomatch(absolutePatterns || [], { dot: true })
   }
@@ -21,6 +23,7 @@ export class Matcher {
    * Check if a path matches the patterns
    */
   match(filePath: string) {
+    filePath = filePath.replace(/\\/g, '/')
     if (filePath.startsWith(this.#rootDirectory)) {
       filePath = filePath.slice(this.#rootDirectory.length).replace(/^\//, '')
     }

@@ -13,5 +13,5 @@ const hotHookConfig = packageJson['hot-hook']
 await hot.init({
   root: hotHookConfig?.root ? resolve(packageJsonPath, packageJson['hot-hook'].root) : undefined,
   boundaries: packageJson['hot-hook']?.boundaries,
-  ignore: packageJson['hot-hook']?.ignore,
+  ignore: ['**/node_modules/**'].concat(packageJson['hot-hook']?.ignore || []),
 })

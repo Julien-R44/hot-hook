@@ -4,6 +4,7 @@
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
     "outDir": "./build",
+    "declaration": true,
     "allowSyntheticDefaultImports": true,
     "strict": true
   },

@@ -1,8 +1,11 @@
 import { register } from 'node:module'
+import { MessageChannel } from 'node:worker_threads'
+
 import { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
 
 class Hot {
   #options!: InitOptions
+  #messageChannel!: MessageChannel
   #declinePaths = new Set<string>()
   #disposeCallbacks = new Map<string, () => void>()
 
@@ -49,20 +52,20 @@ class Hot {
      * between the hook and the application process since hooks
      * are running in a worker thread
      */
-    const { port1, port2 } = new MessageChannel()
+    this.#messageChannel = new MessageChannel()
 
     register('hot-hook/loader', {
       parentURL: import.meta.url,
-      transferList: [port2],
+      transferList: [this.#messageChannel.port2],
       data: {
-        messagePort: port2,
+        messagePort: this.#messageChannel.port2,
         root: this.#options.root,
         ignore: this.#options.ignore,
         boundaries: this.#options.boundaries,
       } satisfies InitializeHookOptions,
     })
 
-    port1.on('message', this.#onMessage.bind(this))
+    this.#messageChannel.port1.on('message', this.#onMessage.bind(this))
   }
 
   /**
@@ -82,6 +85,18 @@ class Hot {
    */
   decline(url: string) {
     this.#declinePaths.add(new URL(url).pathname)
+  }
+
+  /**
+   * Dump the current state hot hook
+   */
+  async dump() {
+    this.#messageChannel.port1.postMessage({ type: 'hot-hook:dump' })
+    const result = await new Promise((resolve) =>
+      this.#messageChannel.port1.once('message', (message) => resolve(message))
+    )
+
+    return result
   }
 }
 

@@ -26,9 +26,18 @@ export class HotHookLoader {
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, options.ignore)
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, options.boundaries)
 
-    this.#dependencyTree = new DependencyTree({
-      root: options.root,
-    })
+    this.#dependencyTree = new DependencyTree({ root: options.root })
+    this.#messagePort?.on('message', (message) => this.#onMessage(message))
+  }
+
+  /**
+   * When a message is received from the main thread
+   */
+  #onMessage(message: any) {
+    if (message.type !== 'hot-hook:dump') return 
+
+    const dump = this.#dependencyTree.dump()
+    this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump })
   }
 
   /**
@@ -87,6 +96,11 @@ export class HotHookLoader {
     import.meta.hot.decline = async () => {
       const { hot } = await import('hot-hook');
       hot.decline(import.meta.url);
+    };
+
+    import.meta.hot.dump = async () => {
+      const { hot } = await import('hot-hook');
+      return hot.dump();
     };
 
     import.meta.hot.boundary = { with: { hot: 'true' } };

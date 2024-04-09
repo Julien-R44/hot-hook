@@ -96,7 +96,7 @@ class Hot {
       this.#messageChannel.port1.once('message', (message) => resolve(message))
     )
 
-    return result.message
+    return result.dump
   }
 }
 

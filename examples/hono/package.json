@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev:tsnode": "hot-runner --node-args=--import=./tsnode.esm.js --node-args=--import=hot-hook/register src/index.tsx",
-    "dev:tsx": "hot-runner --node-args=\"--import=tsx\" bin/start.ts"
+    "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register src/index.tsx"
   },
   "devDependencies": {
     "hot-hook": "workspace:*",
@@ -16,7 +16,6 @@
     "hono": "^4.1.4"
   },
   "hot-hook": {
-    "root": "./bin/server.ts",
     "boundaries": [
       "./views/**/*.tsx"
     ]

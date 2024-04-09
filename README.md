@@ -34,7 +34,7 @@ To configure boundaries and other files, you'll need to use your application's `
 ```json
 // package.json
 {
-  "hot-hook": {
+  "hotHook": {
     "boundaries": [
       "./src/controllers/**/*.tsx"
     ]

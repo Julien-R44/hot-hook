@@ -8,10 +8,10 @@ if (!pkgJson) {
 }
 
 const { packageJson, path: packageJsonPath } = pkgJson
-const hotHookConfig = packageJson['hot-hook']
+const hotHookConfig = packageJson.hotHook
 
 await hot.init({
-  root: hotHookConfig?.root ? resolve(packageJsonPath, packageJson['hot-hook'].root) : undefined,
-  boundaries: packageJson['hot-hook']?.boundaries,
-  ignore: ['**/node_modules/**'].concat(packageJson['hot-hook']?.ignore || []),
+  root: hotHookConfig?.root ? resolve(packageJsonPath, hotHookConfig.root) : undefined,
+  boundaries: hotHookConfig?.boundaries,
+  ignore: ['**/node_modules/**'].concat(hotHookConfig?.ignore || []),
 })

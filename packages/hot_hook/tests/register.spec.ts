@@ -89,8 +89,8 @@ test.group('Register', () => {
     await fakeInstall(fs.basePath)
 
     await fs.createJson('package.json', {
-      'type': 'module',
-      'hot-hook': {
+      type: 'module',
+      hotHook: {
         boundaries: ['./app.js'],
       },
     })

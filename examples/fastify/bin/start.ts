@@ -1,8 +1,8 @@
 import { hot } from 'hot-hook'
 
-await hot.init({ 
+await hot.init({
   root: import.meta.filename,
-  boundaries: ['../src/services/**.ts']
+  boundaries: ['../src/services/**.ts'],
 })
 
 await import('../src/index.js')

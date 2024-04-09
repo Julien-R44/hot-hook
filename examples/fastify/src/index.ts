@@ -10,7 +10,7 @@ const fastify = Fastify({
 })
 
 fastify.get('/', async (request, reply) => {
-  const { PostsService } = await import('./services/posts_service.js', { with: { hot: 'true' }})
+  const { PostsService } = await import('./services/posts_service.js', { with: { hot: 'true' } })
   return new PostsService().getPosts()
 })
 

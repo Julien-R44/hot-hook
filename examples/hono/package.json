@@ -1,4 +1,5 @@
 {
+  "name": "@hot-hook/hono-example",
   "private": true,
   "type": "module",
   "scripts": {

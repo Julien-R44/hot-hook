@@ -1,4 +1,4 @@
-import { uppercasePostTitles } from '../helpers/posts'
+import { uppercasePostTitles } from '../helpers/posts.js'
 
 export class PostsService {
   /**

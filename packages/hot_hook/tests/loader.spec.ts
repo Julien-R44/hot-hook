@@ -142,8 +142,6 @@ test.group('Loader', () => {
        if (import.meta.hot) {
         process.send({ type: 'ok' })
        }
-       console.log(import.meta.hot)
-       console.log("Hello")
     `
     )
     await fs.create(

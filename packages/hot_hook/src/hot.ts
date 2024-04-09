@@ -92,11 +92,11 @@ class Hot {
    */
   async dump() {
     this.#messageChannel.port1.postMessage({ type: 'hot-hook:dump' })
-    const result = await new Promise((resolve) =>
+    const result: any = await new Promise((resolve) =>
       this.#messageChannel.port1.once('message', (message) => resolve(message))
     )
 
-    return result
+    return result.message
   }
 }
 

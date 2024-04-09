@@ -146,15 +146,21 @@ importers:
       '@preact/preset-vite':
         specifier: ^2.8.2
         version: 2.8.2(@babel/core@7.24.4)(preact@10.20.1)(vite@5.2.8)
+      hot-hook:
+        specifier: workspace:^
+        version: link:../hot_hook
       typescript:
         specifier: ^5.2.2
         version: 5.4.3
       unocss:
         specifier: ^0.59.0
-        version: 0.59.0(postcss@8.4.38)(vite@5.2.8)
+        version: 0.59.0(postcss@8.4.38)(rollup@4.14.1)(vite@5.2.8)
       vite:
         specifier: ^5.2.0
         version: 5.2.8(@types/node@20.12.2)
+      vite-plugin-singlefile:
+        specifier: ^2.0.1
+        version: 2.0.1(rollup@4.14.1)(vite@5.2.8)
 
   packages/hot_hook:
     dependencies:
@@ -1647,7 +1653,7 @@ packages:
       picomatch: 2.3.1
     dev: true
 
-  /@rollup/pluginutils@5.1.0:
+  /@rollup/pluginutils@5.1.0(rollup@4.14.1):
     resolution: {integrity: sha512-XTIWOPPcpvyKI6L1NHo0lFlCyznUEyPmPY1mc3KpPVDYulHSTvyeLNVW00QTLIAFNhR3kYnJTQHeGqU4M3n09g==}
     engines: {node: '>=14.0.0'}
     peerDependencies:
@@ -1659,6 +1665,7 @@ packages:
       '@types/estree': 1.0.5
       estree-walker: 2.0.2
       picomatch: 2.3.1
+      rollup: 4.14.1
     dev: true
 
   /@rollup/rollup-android-arm-eabi@4.14.1:
@@ -2218,7 +2225,7 @@ packages:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
 
-  /@unocss/astro@0.59.0(vite@5.2.8):
+  /@unocss/astro@0.59.0(rollup@4.14.1)(vite@5.2.8):
     resolution: {integrity: sha512-1M1OeYO7rthZ8z5Xokb0hE89rXk9AIvELDMRJl0TxYJ8xwK824S2LxpyK52i2g3+S2XmJaQMFoRvfLdCNK+dMw==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
@@ -2228,19 +2235,19 @@ packages:
     dependencies:
       '@unocss/core': 0.59.0
       '@unocss/reset': 0.59.0
-      '@unocss/vite': 0.59.0(vite@5.2.8)
+      '@unocss/vite': 0.59.0(rollup@4.14.1)(vite@5.2.8)
       vite: 5.2.8(@types/node@20.12.2)
     transitivePeerDependencies:
       - rollup
     dev: true
 
-  /@unocss/cli@0.59.0:
+  /@unocss/cli@0.59.0(rollup@4.14.1):
     resolution: {integrity: sha512-2aWSFJ1SCxJBjRAsRog7JvVFfnB4Dps+ol0IFQw99nxaQx8YNiGKN8/bZjkajr0Leo77eAhKoxh2+LjIjrkr6Q==}
     engines: {node: '>=14'}
     hasBin: true
     dependencies:
       '@ampproject/remapping': 2.3.0
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.14.1)
       '@unocss/config': 0.59.0
       '@unocss/core': 0.59.0
       '@unocss/preset-uno': 0.59.0
@@ -2411,13 +2418,13 @@ packages:
       '@unocss/core': 0.59.0
     dev: true
 
-  /@unocss/vite@0.59.0(vite@5.2.8):
+  /@unocss/vite@0.59.0(rollup@4.14.1)(vite@5.2.8):
     resolution: {integrity: sha512-AfVw7PWjFb/+chqbGUjy0r/yFIWAkvPFUY5p4wXyLlPpbQjKlC/96Q771paLexvIhAvcYjUCrAgZSEMnk2JrSQ==}
     peerDependencies:
       vite: ^2.9.0 || ^3.0.0-0 || ^4.0.0 || ^5.0.0-0
     dependencies:
       '@ampproject/remapping': 2.3.0
-      '@rollup/pluginutils': 5.1.0
+      '@rollup/pluginutils': 5.1.0(rollup@4.14.1)
       '@unocss/config': 0.59.0
       '@unocss/core': 0.59.0
       '@unocss/inspector': 0.59.0
@@ -7381,7 +7388,7 @@ packages:
     engines: {node: '>= 10.0.0'}
     dev: true
 
-  /unocss@0.59.0(postcss@8.4.38)(vite@5.2.8):
+  /unocss@0.59.0(postcss@8.4.38)(rollup@4.14.1)(vite@5.2.8):
     resolution: {integrity: sha512-mCF31cfzonVtCFnkW/D99Xf031vedQ4ysyWCmwFr6kVGISc4a1OVqrmC8nv1Lp+8sPHIY9umtpNLX4Iwli/w5w==}
     engines: {node: '>=14'}
     peerDependencies:
@@ -7393,8 +7400,8 @@ packages:
       vite:
         optional: true
     dependencies:
-      '@unocss/astro': 0.59.0(vite@5.2.8)
-      '@unocss/cli': 0.59.0
+      '@unocss/astro': 0.59.0(rollup@4.14.1)(vite@5.2.8)
+      '@unocss/cli': 0.59.0(rollup@4.14.1)
       '@unocss/core': 0.59.0
       '@unocss/extractor-arbitrary-variants': 0.59.0
       '@unocss/postcss': 0.59.0(postcss@8.4.38)
@@ -7412,7 +7419,7 @@ packages:
       '@unocss/transformer-compile-class': 0.59.0
       '@unocss/transformer-directives': 0.59.0
       '@unocss/transformer-variant-group': 0.59.0
-      '@unocss/vite': 0.59.0(vite@5.2.8)
+      '@unocss/vite': 0.59.0(rollup@4.14.1)(vite@5.2.8)
       vite: 5.2.8(@types/node@20.12.2)
     transitivePeerDependencies:
       - postcss
@@ -7535,6 +7542,18 @@ packages:
       '@egjs/hammerjs': 2.0.17
       component-emitter: 1.3.1
     dev: false
+
+  /vite-plugin-singlefile@2.0.1(rollup@4.14.1)(vite@5.2.8):
+    resolution: {integrity: sha512-J74tfN6TE4fz0Hp7E1+dmVTmCpyazv4yuIpR6jd22Kq76d2CQDSQx3wDiHX8LT02f922V+YrLhRq2VIk/UYrig==}
+    engines: {node: '>18.0.0'}
+    peerDependencies:
+      rollup: ^4.12.0
+      vite: ^5.1.4
+    dependencies:
+      micromatch: 4.0.5
+      rollup: 4.14.1
+      vite: 5.2.8(@types/node@20.12.2)
+    dev: true
 
   /vite@5.2.8(@types/node@20.12.2):
     resolution: {integrity: sha512-OyZR+c1CE8yeHw5V5t59aXsUPPVTHMDjEZz8MgguLL/Q7NblxhZUlTu9xSPqlsUO/y+X7dlU05jdhvyycD55DA==}

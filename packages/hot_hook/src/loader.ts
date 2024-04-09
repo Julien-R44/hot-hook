@@ -98,11 +98,6 @@ export class HotHookLoader {
       hot.decline(import.meta.url);
     };
 
-    import.meta.hot.dump = async () => {
-      const { hot } = await import('hot-hook');
-      return hot.dump();
-    };
-
     import.meta.hot.boundary = { with: { hot: 'true' } };
     `
 

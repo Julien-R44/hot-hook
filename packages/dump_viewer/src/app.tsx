@@ -1,12 +1,13 @@
-import { useEffect } from 'preact/hooks'
-import { dump } from './fixtures/dump.json'
-import { Edge, Network, Node } from 'vis-network'
 import { DataSet } from 'vis-data'
+import { useEffect } from 'preact/hooks'
+import { Edge, Network, Node } from 'vis-network'
 
 export function App() {
-  useEffect(() => {
-    const data = dump
-
+  async function initGraph() {
+    const data: HotHookDump = import.meta.env.DEV
+      ? // eslint-disable-next-line unicorn/no-await-expression-member
+        (await import('./fixtures/dump.json')).default
+      : window.__HOT_HOOK_DUMP__
     let nodes: Node[] = []
     let edges: Edge[] = []
 
@@ -17,6 +18,7 @@ export function App() {
       const hasOnlyNodeModulesDependency = item.dependencies.every((dep) =>
         dep.includes('node_modules')
       )
+
       const isRoot = item.dependents.length === 0
 
       const id = index + 1
@@ -76,6 +78,10 @@ export function App() {
         },
       },
     })
+  }
+
+  useEffect(() => {
+    initGraph()
   }, [])
 
   return (

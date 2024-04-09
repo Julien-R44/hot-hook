@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.1.8
+
+### Patch Changes
+
+- 3259e0e: Move from 'hot-hook' to hotHook in package.json configuration
+
 ## 0.1.7
 
 ### Patch Changes

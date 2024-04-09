@@ -14,6 +14,8 @@
     "build": "tsc && vite build && tsc -p tsconfig.node.json",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
+    "release": "release-it",
+    "prepublishOnly": "pnpm lint && pnpm build",
     "lint": "eslint ."
   },
   "devDependencies": {
@@ -33,8 +35,33 @@
   "peerDependencies": {
     "hot-hook": "workspace:*"
   },
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
+  "keywords": [
+    "hmr",
+    "hot",
+    "reload",
+    "esm",
+    "node"
+  ],
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },
-  "prettier": "@adonisjs/prettier-config"
+  "prettier": "@adonisjs/prettier-config",
+  "publishConfig": {
+    "access": "public",
+    "tag": "latest"
+  },
+  "release-it": {
+    "git": {
+      "commitMessage": "chore(release): @hot-hook/dump-viewer@${version}",
+      "tagAnnotation": "v${version}",
+      "tagName": "@hot-hook/dump-viewer@${version}"
+    },
+    "github": {
+      "release": true,
+      "releaseName": "@hot-hook/dump-viewer@${version}",
+      "web": true
+    }
+  }
 }

@@ -17,7 +17,36 @@ The library is designed to be very light and simple. It doesn't perform any dark
 pnpm add hot-hook
 ```
 
-Once installed, you need to add the following code as early as possible in your NodeJS application.
+### Initialization
+
+You have two ways to initialize Hot Hook in your application.
+
+### Using `--import` flag
+
+You can use the `--import` flag to load the Hot Hook hook at application startup without needing to use `hot.init` in your codebase. If you are using a loader to transpile to TS (`ts-node` or `tsx`), Hot Hook must be placed in the second position, after the TS loader otherwise it won't work.
+
+```bash
+node --import=tsx --import=hot-hook/register ./src/index.ts
+```
+
+To configure boundaries and other files, you'll need to use your application's `package.json` file, in the `hot-hook` key. For example: 
+
+```json
+// package.json
+{
+  "hot-hook": {
+    "boundaries": [
+      "./src/controllers/**/*.tsx"
+    ]
+  }
+}
+```
+
+Or you can still use the `import.meta.hot?.boundary` attribute in your code to specify which files should be hot reloadable.
+
+### Using `hot.init`
+
+You need to add the following code as early as possible in your NodeJS application.
 
 ```ts
 import { hot } from 'hot-hook'
@@ -196,6 +225,9 @@ It's quite simple. However, we ship a process manager with Hot Hook. See the doc
 ```ts
 await import('./users_controller.js', import.meta.hot?.boundary)
 ```
+
+> [!TIP]
+> One important thing to note is, ONLY dynamic imports can be hot reloadable. Static imports will not be hot reloadable so don't declare them as boundaries. Read more about this [here](#esm-cache-busting).
 
 By importing a module this way, you are essentially creating a kind of boundary. This module and all the modules imported by it will be hot reloadable.
 

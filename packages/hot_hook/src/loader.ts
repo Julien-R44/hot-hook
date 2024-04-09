@@ -11,23 +11,32 @@ import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
 
 export class HotHookLoader {
-  #projectRoot: string
+  #options: InitializeHookOptions
+  #projectRoot!: string
   #messagePort?: MessagePort
-  #watcher: chokidar.FSWatcher
-  #pathIgnoredMatcher: Matcher
+  #watcher!: chokidar.FSWatcher
+  #pathIgnoredMatcher!: Matcher
   #dependencyTree: DependencyTree
-  #hardcodedBoundaryMatcher: Matcher
+  #hardcodedBoundaryMatcher!: Matcher
 
   constructor(options: InitializeHookOptions) {
-    this.#projectRoot = dirname(options.root)
+    this.#options = options
     this.#messagePort = options.messagePort
 
-    this.#watcher = this.#createWatcher().add(options.root)
-    this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, options.ignore)
-    this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, options.boundaries)
+    if (options.root) this.#initialize(options.root)
 
     this.#dependencyTree = new DependencyTree({ root: options.root })
     this.#messagePort?.on('message', (message) => this.#onMessage(message))
+  }
+
+  /**
+   * Initialize the class with the provided root path.
+   */
+  #initialize(root: string) {
+    this.#projectRoot = dirname(root)
+    this.#watcher = this.#createWatcher().add(root)
+    this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
+    this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
   }
 
   /**
@@ -153,13 +162,19 @@ export class HotHookLoader {
     }
 
     const resultPath = fileURLToPath(resultUrl)
-    const parentPath = fileURLToPath(parentUrl)
+    const isRoot = !parentUrl
+    if (isRoot) {
+      this.#dependencyTree.addRoot(resultPath)
+      this.#initialize(resultPath)
+      return result
+    } else {
+      const parentPath = fileURLToPath(parentUrl)
+      const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
+      const reloadable = context.importAttributes.hot === 'true' ? true : isHardcodedBoundary
 
-    const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
-    const reloadable = context.importAttributes.hot === 'true' ? true : isHardcodedBoundary
-
-    this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
-    this.#dependencyTree.addDependent(resultPath, parentPath)
+      this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
+      this.#dependencyTree.addDependent(resultPath, parentPath)
+    }
 
     if (this.#pathIgnoredMatcher.match(resultPath)) {
       return result

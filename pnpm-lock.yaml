@@ -164,9 +164,6 @@ importers:
       fast-glob:
         specifier: ^3.3.2
         version: 3.3.2
-      p-event:
-        specifier: ^6.0.1
-        version: 6.0.1
       picomatch:
         specifier: ^4.0.2
         version: 4.0.2
@@ -5926,6 +5923,7 @@ packages:
     engines: {node: '>=16.17'}
     dependencies:
       p-timeout: 6.1.2
+    dev: true
 
   /p-limit@2.3.0:
     resolution: {integrity: sha512-//88mFWSJx8lxCzwdAABTJL2MyWB12+eIY7MDL2SqLmAkeKU9qxRvWuSyTjm3FUmpBEMuFfckAIqEaVGUDxb6w==}
@@ -5979,6 +5977,7 @@ packages:
   /p-timeout@6.1.2:
     resolution: {integrity: sha512-UbD77BuZ9Bc9aABo74gfXhNvzC9Tx7SxtHSh1fxvx3jTLLYvmVhiQZZrJzqqU0jKbN32kb5VOKiLEQI/3bIjgQ==}
     engines: {node: '>=14.16'}
+    dev: true
 
   /p-try@2.2.0:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}

@@ -34,7 +34,7 @@ export class HotHookLoader {
    * When a message is received from the main thread
    */
   #onMessage(message: any) {
-    if (message.type !== 'hot-hook:dump') return 
+    if (message.type !== 'hot-hook:dump') return
 
     const dump = this.#dependencyTree.dump()
     this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump })

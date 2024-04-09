@@ -39,12 +39,16 @@ export default class DependencyTree {
   #tree!: FileNode
   #pathMap: Map<string, FileNode> = new Map()
 
-  constructor(options: { root: string }) {
+  constructor(options: { root?: string }) {
+    if (options.root) this.addRoot(options.root)
+  }
+
+  addRoot(path: string) {
     this.#tree = {
       version: 0,
       parents: null,
       reloadable: false,
-      path: options.root,
+      path: path,
       dependents: new Set(),
       dependencies: new Set(),
     }

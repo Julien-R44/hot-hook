@@ -11,7 +11,7 @@
   "exports": {
     ".": "./build/src/hot.js",
     "./loader": "./build/src/loader.js",
-    "./runner": "./build/src/runner.js",
+    "./register": "./build/src/register.js",
     "./import-meta": {
       "types": "./import-meta.d.ts"
     }
@@ -33,7 +33,8 @@
   "dependencies": {
     "chokidar": "^3.6.0",
     "fast-glob": "^3.3.2",
-    "picomatch": "^4.0.2"
+    "picomatch": "^4.0.2",
+    "read-package-up": "^11.0.0"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",

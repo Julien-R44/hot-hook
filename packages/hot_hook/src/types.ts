@@ -21,7 +21,7 @@ export interface InitOptions {
   /**
    * Path to the root file of the application.
    */
-  root: string
+  root?: string
 
   /**
    * Files that will create an HMR boundary. This is equivalent of importing

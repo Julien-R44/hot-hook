@@ -4,7 +4,13 @@ The dump viewer is a small frontend app built with `Vis.js` that lets you view H
 
 ![image](../../assets/dump_viewer.png)
 
-To use it, you can add it to your application as follows: 
+To use it, first make sure to install it :
+
+```bash
+npm install @hot-hook/dump-viewer
+```
+
+Then you can add it to your application as follows: 
 
 ```ts
 router.get('/dump-viewer', async (request, reply) => {

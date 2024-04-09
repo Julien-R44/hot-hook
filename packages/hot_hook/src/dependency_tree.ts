@@ -1,3 +1,5 @@
+import { dirname, relative } from 'node:path'
+
 /**
  * Represent a file node in the dependency tree.
  */
@@ -178,5 +180,19 @@ export default class DependencyTree {
 
     const result = checkPathToRoot(node)
     return result
+  }
+
+  dump() {
+    const rootDirname = dirname(this.#tree.path)
+    const isNodeModule = (path: string) => path.includes('node_modules')
+
+    return Array.from(this.#pathMap.values()).map((node) => ({
+      path: relative(rootDirname, node.path),
+      boundary: node.reloadable,
+      reloadable: isNodeModule(node.path) ? false : this.isReloadable(node.path),
+      version: node.version,
+      dependencies: Array.from(node.dependencies).map((n) => relative(rootDirname, n.path)),
+      dependents: Array.from(node.dependents).map((n) => relative(rootDirname, n.path)),
+    }))
   }
 }

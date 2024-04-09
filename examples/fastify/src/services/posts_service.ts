@@ -1,3 +1,5 @@
+import { uppercasePostTitles } from '../helpers/posts'
+
 export class PostsService {
   /**
    * Try updating the return value of this method and refreshing the page.
@@ -5,10 +7,10 @@ export class PostsService {
    * restarting the whole server.
    */
   getPosts() {
-    return [
-      { id: 1, title: 'Post 1' },
-      { id: 2, title: 'Post 2' },
-      { id: 3, title: 'Post 3' },
-    ]
+    return uppercasePostTitles([
+      { id: 1, title: 'post 1' },
+      { id: 2, title: 'post 2' },
+      { id: 3, title: 'post 3' },
+    ])
   }
 }

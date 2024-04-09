@@ -8,6 +8,7 @@
     "@hot-hook/runner": "workspace:*",
     "@types/node": "^20.11.17",
     "hot-hook": "workspace:*",
+    "@hot-hook/dump-viewer": "workspace:*",
     "pino-pretty": "^11.0.0",
     "tsx": "^3.12.2"
   },

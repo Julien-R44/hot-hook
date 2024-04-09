@@ -228,6 +228,52 @@ With all that, Hot Hook is ultimately quite simple:
 
 Simple, lightweight, and efficient.
 
+## Dump
+
+If you need to retrieve Hot Hook's dependency graph then you can access it as follows: 
+
+```ts
+import { hot } from 'hot-hook'
+console.log(await hot.dump()) 
+
+/**
+ * Output will be something like this
+ */
+const dump = [
+   {
+      "path":"server.ts",
+      "boundary": false,
+      "reloadable":false,
+      "dependencies":["../node_modules/@adonisjs/core/build/index.js","../start/env.ts"],
+      "dependents":[]
+   },
+   {
+      "path":"../node_modules/@adonisjs/core/build/index.js",
+      "boundary":false,
+      "reloadable":false,
+      "dependencies":["../node_modules/@adonisjs/core/build/src/config_provider.js"],
+      "dependents":["server.ts", "../app/pages/controllers/landing_controller.tsx", "../app/auth/controllers/login_controller.tsx", "../app/auth/services/auth_service.ts"]
+   },
+]
+```
+
+### Viewer
+
+If you need to visualize the same dependency graph, you can use Hot Hook's Dump viewer. First make sure to install the `@hot-hook/dump-viewer` package and add the following code to your application:
+
+```ts
+router.get('/dump-viewer', async (request, reply) => {
+  const { dumpViewer } = await import('@hot-hook/dump-viewer')
+
+  reply.header('Content-Type', 'text/html; charset=utf-8')
+  return dumpViewer()
+})
+```
+
+Then access your server's `/dump-viewer` URL to view the graph: 
+
+![dump viewer](./assets/dump_viewer.png)
+
 ## Alternatives
 
 If you are looking for a more complete HMR solution, you can take a look at [dynohot](https://github.com/braidnetworks/dynohot)

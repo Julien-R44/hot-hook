@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.1.9
+
+### Patch Changes
+
+- Republishing packages since I forgot to build them before publishing the last release :D
+
 ## 0.1.8
 
 ### Patch Changes

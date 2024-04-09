@@ -1,5 +1,13 @@
 # @hot-hook/dump-viewer
 
+## 0.2.3
+
+### Patch Changes
+
+- Republishing packages since I forgot to build them before publishing the last release :D
+- Updated dependencies
+  - hot-hook@0.1.9
+
 ## 0.2.2
 
 ### Patch Changes

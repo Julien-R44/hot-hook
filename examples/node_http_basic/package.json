@@ -1,4 +1,5 @@
 {
+  "private": true,
   "type": "module",
   "scripts": {
     "dev:tsnode": "hot-runner --node-args=\"--import=./tsnode.esm.js\" bin/start.ts"

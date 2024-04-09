@@ -25,7 +25,6 @@
     "pretest": "pnpm lint",
     "test": "c8 pnpm quick:test",
     "build": "pnpm clean && tsc",
-    "release": "release-it",
     "prepublishOnly": "pnpm lint && pnpm build"
   },
   "devDependencies": {
@@ -52,17 +51,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "release-it": {
-    "git": {
-      "commitMessage": "chore(release): ${version}",
-      "tagAnnotation": "v${version}",
-      "tagName": "v${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "v${version}",
-      "web": true
-    }
   }
 }

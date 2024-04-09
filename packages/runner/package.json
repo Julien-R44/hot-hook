@@ -15,7 +15,6 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
-    "release": "release-it",
     "prepublish": "pnpm lint && pnpm clean",
     "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
     "test": "c8 pnpm quick:test",
@@ -35,17 +34,5 @@
   "publishConfig": {
     "access": "public",
     "tag": "latest"
-  },
-  "release-it": {
-    "git": {
-      "commitMessage": "chore(release): @hot-hook/runner@${version}",
-      "tagAnnotation": "v${version}",
-      "tagName": "@hot-hook/runner@${version}"
-    },
-    "github": {
-      "release": true,
-      "releaseName": "@hot-hook/runner@${version}",
-      "web": true
-    }
   }
 }

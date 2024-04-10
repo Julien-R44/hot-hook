@@ -208,16 +208,6 @@ await import('./app.js?v=2')
 
 If you execute this code, and modify the app.js file between the two imports, then the second import will load the latest version of the module you've saved.
 
-### Full reload
-
-Now, how do we perform a full reload? How do we force Node.js to reload the entire process?
-
-For this, there's no secret : you will need a process manager. Whenever a file listed in `reload`, or a file containing the `import.meta.hot?.decline()` instruction is modified, Hot Hook will by default send a message to the parent process to tell it to reload the module. But for that, you need a parent process. And a parent process that understands this instruction.
-
-So the concept is simple: the manager needs to launch your application as a child process and listen to messages from the child process. If the child process sends a message asking for a full reload, then the manager must kill the child process and restart it.
-
-It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner [here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
-
 ### Boundary
 
 "HMR boundaries" are an important concept in Hot Hook. The so-called "boundary modules" are modules that are marked as being hot reloadable using the `import.meta.hot?.boundary` attribute during their importation :
@@ -247,6 +237,16 @@ In this example, `users_controller.ts` and `posts_controller.ts` are boundary fi
 - The same goes for `app/services/post.ts`.
 - `utils/helpers.ts` is also hot reloadable because the only path to reach the root file goes through `users_controller.ts`, which is a boundary file.
 - Now, more interestingly, `app/models/user.ts` is NOT hot reloadable. Because there are TWO paths to reach the root file. The first goes through `users_controller.ts`, which is a boundary file, but the second goes through `providers/database.ts`, which is not a boundary file. Therefore, Hot Hook cannot hot reload `app/models/user.ts`. A modification to this file would require a full reload of the server. If `providers/database.ts` did not import `app/models/user.ts`, then `app/models/user.ts` would be hot reloadable.
+
+### Full reload
+
+Now, how do we perform a full reload? How do we force Node.js to reload the entire process?
+
+For this, there's no secret : you will need a process manager. Whenever a file that should trigger a full reload is updated, Hot Hook will send a message to the parent process to tell it to reload the module. But for that, you need a parent process. And a parent process that understands this instruction.
+
+So the concept is simple: the manager needs to launch your application as a child process and listen to messages from the child process. If the child process sends a message asking for a full reload, then the manager must kill the child process and restart it.
+
+It's quite simple. However, we ship a process manager with Hot Hook. See the documentation of the runner [here](./packages/runner/) for more information, and also see the examples in the [examples](./examples/) folder that use the runner.
 
 ### Hot Hook
 

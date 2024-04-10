@@ -210,7 +210,7 @@ If you execute this code, and modify the app.js file between the two imports, th
 
 ### Boundary
 
-"HMR boundaries" are an important concept in Hot Hook. The so-called "boundary modules" are modules that are marked as being hot reloadable using the `import.meta.hot?.boundary` attribute during their importation :
+"HMR boundaries" are an important concept in Hot Hook. The so-called "boundary modules" are modules that are marked as being hot reloadable using the `import.meta.hot?.boundary` attribute during their importation (or using the `boundaries` configuration in your `package.json`) :
 
 ```ts
 await import('./users_controller.js', import.meta.hot?.boundary)

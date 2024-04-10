@@ -35,7 +35,7 @@
   ```jsonc
   // package.json
   {
-    "hot-hook": {
+    "hotHook": {
       "boundaries": ["./src/controllers/**/*.tsx"],
     },
   }

@@ -17,7 +17,7 @@
   "dependencies": {
     "fastify": "^4.26.2"
   },
-  "hot-hook": {
+  "hotHook": {
     "boundaries": [
       "./services/**/*.ts"
     ]

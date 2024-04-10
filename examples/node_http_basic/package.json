@@ -9,7 +9,7 @@
     "hot-hook": "workspace:*",
     "@hot-hook/runner": "workspace:*"
   },
-  "hot-hook": {
+  "hotHook": {
     "boundaries": [
       "./app.ts"
     ]

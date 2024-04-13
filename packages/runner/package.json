@@ -1,8 +1,8 @@
 {
   "name": "@hot-hook/runner",
   "description": "Runner for applications that use hot-hook",
-  "version": "0.0.3",
-  "main": "index.js",
+  "version": "0.0.4",
+  "main": "build/bin/run.js",
   "type": "module",
   "files": [
     "build"

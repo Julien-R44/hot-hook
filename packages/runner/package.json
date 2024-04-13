@@ -1,7 +1,7 @@
 {
   "name": "@hot-hook/runner",
   "description": "Runner for applications that use hot-hook",
-  "version": "0.0.4",
+  "version": "0.0.6",
   "main": "build/bin/run.js",
   "type": "module",
   "files": [
@@ -15,7 +15,6 @@
     "build": "tsc",
     "typecheck": "tsc --noEmit",
     "lint": "eslint . --ext=.ts",
-    "prepublish": "pnpm lint && pnpm clean",
     "quick:test": "node --import=./tsnode.esm.js --enable-source-maps bin/test.ts",
     "test": "c8 pnpm quick:test",
     "prepublishOnly": "pnpm build"

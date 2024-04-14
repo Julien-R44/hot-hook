@@ -115,7 +115,8 @@ export default class DependencyTree {
       const currentPath = queue.pop()!
       if (!invalidatedFiles.has(currentPath)) {
         const node = this.#pathMap.get(currentPath)
-        if (!node) throw new Error(`Node ${currentPath} does not exist`)
+        if (!node) continue
+
         node.version++
         invalidatedFiles.add(currentPath)
         queue.push(...Array.from(node.dependents).map((n) => n.path))

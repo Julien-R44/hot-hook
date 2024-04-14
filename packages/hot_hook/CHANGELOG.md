@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.1.10
+
+### Patch Changes
+
+- c26292d: Don't throw when a dependent file node is missing. This can happen when a file has been deleted
+
 ## 0.1.9
 
 ### Patch Changes

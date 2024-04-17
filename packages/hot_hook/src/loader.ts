@@ -22,6 +22,7 @@ export class HotHookLoader {
   constructor(options: InitializeHookOptions) {
     this.#options = options
     this.#messagePort = options.messagePort
+    this.#projectRoot = options.rootDirectory!
 
     if (options.root) this.#initialize(options.root)
 
@@ -33,8 +34,8 @@ export class HotHookLoader {
    * Initialize the class with the provided root path.
    */
   #initialize(root: string) {
-    this.#projectRoot = dirname(root)
     this.#watcher = this.#createWatcher().add(root)
+    this.#projectRoot = this.#projectRoot ?? dirname(root)
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
   }

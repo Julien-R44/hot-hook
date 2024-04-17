@@ -42,6 +42,8 @@ To configure boundaries and other files, you'll need to use your application's `
 }
 ```
 
+Note that glob patterns are resolved from the `package.json` directory.
+
 Or you can still use the `import.meta.hot?.boundary` attribute in your code to specify which files should be hot reloadable.
 
 ### Using `hot.init`

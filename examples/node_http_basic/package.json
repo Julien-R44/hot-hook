@@ -11,7 +11,7 @@
   },
   "hotHook": {
     "boundaries": [
-      "./app.ts"
+      "./src/app.ts"
     ]
   }
 }

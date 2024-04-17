@@ -19,7 +19,7 @@
   },
   "hotHook": {
     "boundaries": [
-      "./services/**/*.ts"
+      "./src/services/**/*.ts"
     ]
   }
 }

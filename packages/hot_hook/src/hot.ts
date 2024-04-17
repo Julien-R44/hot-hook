@@ -58,10 +58,11 @@ class Hot {
       parentURL: import.meta.url,
       transferList: [this.#messageChannel.port2],
       data: {
-        messagePort: this.#messageChannel.port2,
         root: this.#options.root,
         ignore: this.#options.ignore,
         boundaries: this.#options.boundaries,
+        messagePort: this.#messageChannel.port2,
+        rootDirectory: this.#options.rootDirectory,
       } satisfies InitializeHookOptions,
     })
 

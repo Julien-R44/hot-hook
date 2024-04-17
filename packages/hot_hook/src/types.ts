@@ -24,13 +24,22 @@ export interface InitOptions {
   root?: string
 
   /**
+   * Root Directory will be used to resolve relative paths.
+   * If not provided, it will be the directory of the root file.
+   */
+  rootDirectory?: string
+
+  /**
    * Files that will create an HMR boundary. This is equivalent of importing
    * the module with `import.meta.hot.boundary` in the module.
    */
   boundaries?: string[]
 }
 
-export type InitializeHookOptions = Pick<InitOptions, 'ignore' | 'root' | 'boundaries'> & {
+export type InitializeHookOptions = Pick<
+  InitOptions,
+  'ignore' | 'root' | 'rootDirectory' | 'boundaries'
+> & {
   /**
    * The message port to communicate with the parent thread.
    */

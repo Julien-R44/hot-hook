@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.2.1
+
+### Patch Changes
+
+- 5f6de24: `--import=hot-hook/register` was broken due to a bug in path handling that wasn't cross platform. This has been fixed and also added a Windows CI to prevent this from happening again.
+
 ## 0.2.0
 
 ### Minor Changes

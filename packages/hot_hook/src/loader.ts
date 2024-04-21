@@ -63,6 +63,7 @@ export class HotHookLoader {
      */
     const isReloadable = this.#dependencyTree.isReloadable(realFilePath)
     if (!isReloadable) {
+      debug('Full reload %s', realFilePath)
       return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
     }
 

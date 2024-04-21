@@ -2,32 +2,32 @@ import { resolve } from 'node:path'
 import picomatch from 'picomatch'
 
 export class Matcher {
-  #rootDirectory: string
   #matcher: picomatch.Matcher
 
   constructor(rootDirectory: string, patterns: picomatch.Glob = []) {
-    this.#rootDirectory = rootDirectory
-
     patterns = Array.isArray(patterns) ? patterns : [patterns]
+
     const absolutePatterns = patterns
       .map((pattern) => {
-        if (pattern.startsWith('../')) return resolve(rootDirectory, pattern)
-        return pattern
+        /**
+         * Do not resolve double star patterns because they are not relative to the root
+         */
+        if (pattern.startsWith('**')) return pattern
+
+        /**
+         * Resolve the pattern to the root directory. All patterns are relative to the root
+         */
+        return resolve(rootDirectory, pattern)
       })
       .map((path) => path.replace(/\\/g, '/'))
 
-    this.#matcher = picomatch(absolutePatterns || [], { dot: true })
+    this.#matcher = picomatch(absolutePatterns || [], { dot: true, posixSlashes: true })
   }
 
   /**
    * Check if a path matches the patterns
    */
   match(filePath: string) {
-    filePath = filePath.replace(/\\/g, '/')
-    if (filePath.startsWith(this.#rootDirectory)) {
-      filePath = filePath.slice(this.#rootDirectory.length).replace(/^\//, '')
-    }
-
-    return this.#matcher(filePath)
+    return this.#matcher(resolve(filePath))
   }
 }

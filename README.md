@@ -1,6 +1,6 @@
 # Hot Hook
 
-Hot Hook is a simple and lightweight library for adding hot module reloading in NodeJS with ESM.
+Hot Hook is a simple and lightweight library for adding hot module replacement in NodeJS with ESM.
 
 You know how in frameworks like React or VueJS, you edit a file and the page updates automatically without needing to refresh? Well, it's the same concept but for NodeJS.
 
@@ -59,7 +59,7 @@ await hot.init({
 })
 ```
 
-The `hot.init` function internally call [`register`](https://nodejs.org/api/module.html#moduleregisterspecifier-parenturl-options) from `node:module` to hook into the module loading process. This is why you need to call it as early as possible, otherwise modules imported before the call to `hot.init` will not benefit from hot module reloading.
+The `hot.init` function internally call [`register`](https://nodejs.org/api/module.html#moduleregisterspecifier-parenturl-options) from `node:module` to hook into the module loading process. This is why you need to call it as early as possible, otherwise modules imported before the call to `hot.init` will not benefit from hot module replacement.
 
 Next, you need to include the types for `import.meta.hot` in your project. To do this, add the following code in a `.d.ts` file or in the `types` property of your `tsconfig.json`.
 
@@ -194,13 +194,13 @@ Hot Hook is a [hook](https://nodejs.org/api/module.html#customization-hooks) for
 
 Once you use an import, Node.js loads the module into memory and keeps it in cache. This means that if you import the same module multiple times in your application, Node.js will load it only once throughout the application's lifetime.
 
-This is problematic for hot module reloading.
+This is problematic for hot module replacement.
 
 Previously, with CommonJS (require), we had control over this Node.js cache. We could remove a module from the cache (`delete require.cache`), and thus a require on this module would force Node.js to fetch the latest version of the module.
 
 So, how do we do this in ESM? There have been lots of discussions on this topic for a while (https://github.com/nodejs/node/issues/49442, https://github.com/nodejs/help/issues/2806). But for now, there's no official solution. However, there is a trick. A trick that causes memory leaks, but they are so minimal that it shouldn't be a problem for most applications. Especially since we use this trick ONLY in development mode.
 
-This trick is what Hot Hook uses to do hot module reloading. And it simply involves adding a query parameter to the URL of the imported module. This forces Node.js to load again the module, thus getting the latest version of the module.
+This trick is what Hot Hook uses to do hot module replacement. And it simply involves adding a query parameter to the URL of the imported module. This forces Node.js to load again the module, thus getting the latest version of the module.
 
 ```ts
 await import('./app.js?v=1')

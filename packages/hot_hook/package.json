@@ -1,7 +1,7 @@
 {
   "name": "hot-hook",
   "description": "Easy hot module reloading (HMR) for Node.js and ESM",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "main": "index.js",
   "type": "module",
   "files": [

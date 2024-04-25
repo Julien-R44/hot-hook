@@ -175,7 +175,6 @@ export class HotHookLoader {
       const reloadable = context.importAttributes.hot === 'true' ? true : isHardcodedBoundary
 
       this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
-      this.#dependencyTree.addDependent(resultPath, parentPath)
     }
 
     if (this.#pathIgnoredMatcher.match(resultPath)) {

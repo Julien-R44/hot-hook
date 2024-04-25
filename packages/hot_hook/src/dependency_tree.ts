@@ -90,6 +90,7 @@ export default class DependencyTree {
 
     childNode.parents?.add(parentNode)
     parentNode.dependencies.add(childNode)
+    this.addDependent(parentNode.path, childNode.path)
   }
 
   /**
@@ -116,6 +117,7 @@ export default class DependencyTree {
       if (!invalidatedFiles.has(currentPath)) {
         const node = this.#pathMap.get(currentPath)
         if (!node) continue
+        if (!this.isReloadable(currentPath)) continue
 
         node.version++
         invalidatedFiles.add(currentPath)

@@ -1,5 +1,23 @@
 # hot-hook
 
+## 0.2.3
+
+### Patch Changes
+
+- 07cadde: The HMR was a bit broken in some situations due to a change introduced by 117f9c150df9b5ec1463f59364a27572c7f3f3e8. This has been fixed and tests have been added to prevent it happening again.
+- 0ade4eb: One of the problems we encountered was that Hot Hook didn't send a full reload message when a `.env` file was changed, for example. This is because `.env` files are not javascript modules, and so are not processed by Hot Hook nor added to the dependency graph.
+
+  As a result, this commit introduces a `restart` property in the config that allows you to specify which files should trigger a full reload. By default, `restart` will be equal to `['.env']`.
+
+  ```js
+  // package.json
+  {
+    “hotHook”: {
+      “restart”: [“.env”, “./config/foo.yaml”]
+    }
+  }
+  ```
+
 ## 0.2.2
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # @hot-hook/dump-viewer
 
+## 0.3.3
+
+### Patch Changes
+
+- f8dba59: The version numbers of each module are now added to the graph viewer. This makes it easy to see whether a module has been updated or not.
+- Updated dependencies [07cadde]
+- Updated dependencies [0ade4eb]
+  - hot-hook@0.2.3
+
 ## 0.3.2
 
 ### Patch Changes

@@ -12,9 +12,7 @@ const { packageJson, path: packageJsonPath } = pkgJson
 const hotHookConfig = packageJson.hotHook
 
 await hot.init({
+  ...(hotHookConfig || {}),
   rootDirectory: dirname(packageJsonPath),
-  boundaries: hotHookConfig?.boundaries,
-  ignore: ['**/node_modules/**'].concat(hotHookConfig?.ignore || []),
   root: hotHookConfig?.root ? resolve(packageJsonPath, hotHookConfig.root) : undefined,
-  restart: hotHookConfig?.restart,
 })

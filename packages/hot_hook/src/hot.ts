@@ -1,6 +1,7 @@
 import { register } from 'node:module'
 import { MessageChannel } from 'node:worker_threads'
 
+import debug from './debug.js'
 import { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
 
 class Hot {
@@ -49,6 +50,8 @@ class Hot {
       },
       options
     )
+
+    debug('Hot hook options %o', this.#options)
 
     /**
      * First, we setup a message channel to be able to communicate

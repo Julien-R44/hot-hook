@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.2.4
+
+### Patch Changes
+
+- 7d4a8bc: Fix: should use default values when configured through --import=hot-hook/register
+
 ## 0.2.3
 
 ### Patch Changes

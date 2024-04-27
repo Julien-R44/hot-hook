@@ -1,5 +1,12 @@
 # @hot-hook/dump-viewer
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [7d4a8bc]
+  - hot-hook@0.2.4
+
 ## 0.3.3
 
 ### Patch Changes

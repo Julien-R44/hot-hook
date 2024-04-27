@@ -90,7 +90,7 @@ export default class DependencyTree {
 
     childNode.parents?.add(parentNode)
     parentNode.dependencies.add(childNode)
-    this.addDependent(parentNode.path, childNode.path)
+    this.addDependent(dependency.path, parentPath)
   }
 
   /**

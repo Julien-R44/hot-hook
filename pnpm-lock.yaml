@@ -118,8 +118,8 @@ importers:
         specifier: ^8.57.0
         version: 8.57.0
       hot-hook:
-        specifier: ^0.2.1
-        version: 0.2.2
+        specifier: workspace:*
+        version: link:../../packages/hot_hook
       pino-pretty:
         specifier: ^11.0.0
         version: 11.0.0
@@ -2750,9 +2750,6 @@ packages:
   hosted-git-info@7.0.1:
     resolution: {integrity: sha512-+K84LB1DYwMHoHSgaOY/Jfhw3ucPmSET5v98Ke/HdNSw4a0UktWzyW1mjhjpuxxTqOOsfWT/7iVshHmVZ4IpOA==}
     engines: {node: ^16.14.0 || >=18.0.0}
-
-  hot-hook@0.2.2:
-    resolution: {integrity: sha512-CwXbOcTFc91m5CyGNp39tSe3yj/Bl4q9YfFwypSMJl6PpS3vXsbOdKtGLNNXHOIGFHDj5UpJp1Pu72/OE9UPaQ==}
 
   html-escaper@2.0.2:
     resolution: {integrity: sha512-H2iMtd0I4Mt5eYiapRdIDjp+XzelXQ0tFE4JS7YFwFevXXMmOp9myNrUvCg0D6ws8iqkRPBfKHgbwig1SmlLfg==}
@@ -7484,13 +7481,6 @@ snapshots:
   hosted-git-info@7.0.1:
     dependencies:
       lru-cache: 10.2.0
-
-  hot-hook@0.2.2:
-    dependencies:
-      chokidar: 3.6.0
-      fast-glob: 3.3.2
-      picomatch: 4.0.2
-      read-package-up: 11.0.0
 
   html-escaper@2.0.2: {}
 

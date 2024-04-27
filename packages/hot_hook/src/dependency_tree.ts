@@ -133,7 +133,7 @@ export default class DependencyTree {
    */
   remove(path: string): void {
     const node = this.#pathMap.get(path)
-    if (!node) throw new Error(`Node ${path} does not exist`)
+    if (!node) return
 
     if (node.parents) {
       for (const parent of node.parents) {

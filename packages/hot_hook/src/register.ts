@@ -16,4 +16,5 @@ await hot.init({
   boundaries: hotHookConfig?.boundaries,
   ignore: ['**/node_modules/**'].concat(hotHookConfig?.ignore || []),
   root: hotHookConfig?.root ? resolve(packageJsonPath, hotHookConfig.root) : undefined,
+  restart: hotHookConfig?.restart,
 })

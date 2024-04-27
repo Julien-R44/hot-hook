@@ -38,12 +38,12 @@ test.group('Loader', () => {
 
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated new' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated new')
   })
 
@@ -80,9 +80,9 @@ test.group('Loader', () => {
     await server.waitForOutput('Server is running')
 
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
+    await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
     await setTimeout(100)
 
-    await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
     const result = await pEvent(
       server.child,
       'message',
@@ -259,12 +259,60 @@ test.group('Loader', () => {
 
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated new' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated new')
   })
+
+  test('full reload when a `restart` file changes', async ({ fs, assert }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create('.env', 'HELLO=WORLD')
+
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+
+       await hot.init({
+         root: import.meta.filename,
+       })
+
+       const server = http.createServer(async (request, response) => {
+          const HELLO = process.env.HELLO
+
+          response.writeHead(200, {'Content-Type': 'text/plain'})
+          response.end(HELLO)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--env-file=.env'],
+    })
+
+    await server.waitForOutput('Server is running')
+
+    await supertest('http://localhost:3333').get('/').expect(200).expect('WORLD')
+
+    await setTimeout(100)
+    fs.create('.env', 'HELLO=WORLD UPDATED')
+    const result = await pEvent(
+      server.child,
+      'message',
+      (message: any) => message?.type === 'hot-hook:full-reload'
+    )
+    assert.isDefined(result)
+  }).disableTimeout()
 })

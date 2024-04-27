@@ -34,11 +34,25 @@ export interface InitOptions {
    * the module with `import.meta.hot.boundary` in the module.
    */
   boundaries?: string[]
+
+  /**
+   * List of files that should trigger a full reload when change.
+   * Usually you will only need to add files that are not imported by
+   * your application since imported files that need to trigger a full
+   * reload will be automatically detected.
+   *
+   * For example an `.env` file is a good candidate for this list.
+   * Hot Hook will watch these files and send a full reload message
+   * to the main thread when they change.
+   *
+   * @default ['.env']
+   */
+  restart?: string[]
 }
 
 export type InitializeHookOptions = Pick<
   InitOptions,
-  'ignore' | 'root' | 'rootDirectory' | 'boundaries'
+  'ignore' | 'root' | 'rootDirectory' | 'boundaries' | 'restart'
 > & {
   /**
    * The message port to communicate with the parent thread.

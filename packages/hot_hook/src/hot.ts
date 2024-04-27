@@ -42,10 +42,13 @@ class Hot {
    * Register the hot reload hooks
    */
   async init(options: InitOptions) {
-    this.#options = {
-      ignore: ['**/node_modules/**'],
-      ...options,
-    }
+    this.#options = Object.assign(
+      {
+        ignore: ['**/node_modules/**'],
+        restart: ['.env'],
+      },
+      options
+    )
 
     /**
      * First, we setup a message channel to be able to communicate
@@ -60,6 +63,7 @@ class Hot {
       data: {
         root: this.#options.root,
         ignore: this.#options.ignore,
+        restart: this.#options.restart,
         boundaries: this.#options.boundaries,
         messagePort: this.#messageChannel.port2,
         rootDirectory: this.#options.rootDirectory,

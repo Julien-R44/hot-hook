@@ -170,4 +170,49 @@ test.group('Register', () => {
     await createHandlerFile({ path: 'src/app.js', response: 'Hello World! Updated new' })
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated new')
   })
+
+  test('use package.json restart files', async ({ fs }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', {
+      type: 'module',
+      hotHook: {
+        boundaries: ['./app.js'],
+        restart: ['.restart-file'],
+      },
+    })
+    await fs.create('.restart-file', '')
+
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { join } from 'node:path'
+
+       const server = http.createServer(async (request, response) => {
+         const app = await import('./app.js')
+         await app.default(request, response)
+       })
+
+       server.listen(3333, () => console.log('Server is running'))
+      `
+    )
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    await server.waitForOutput('Server is running')
+
+    await fs.create('.restart-file', '')
+    await pEvent(
+      server.child,
+      'message',
+      (message: any) =>
+        message?.type === 'hot-hook:full-reload' && message.path.includes('.restart-file')
+    )
+  })
 })

@@ -13,6 +13,7 @@ import { InitializeHookOptions } from './types.js'
 export class HotHookLoader {
   #options: InitializeHookOptions
   #projectRoot!: string
+  #reloadMatcher!: Matcher
   #messagePort?: MessagePort
   #watcher!: chokidar.FSWatcher
   #pathIgnoredMatcher!: Matcher
@@ -34,8 +35,9 @@ export class HotHookLoader {
    * Initialize the class with the provided root path.
    */
   #initialize(root: string) {
-    this.#watcher = this.#createWatcher().add(root)
+    this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
     this.#projectRoot = this.#projectRoot ?? dirname(root)
+    this.#reloadMatcher = new Matcher(this.#projectRoot, this.#options.restart || [])
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
   }
@@ -58,12 +60,20 @@ export class HotHookLoader {
     const realFilePath = await realpath(filePath)
 
     /**
-     * If the file is in the reload list, we send a full reload message
-     * to the main thread.
+     * If the file is an hardcoded reload file, we trigger a full reload.
+     */
+    if (this.#reloadMatcher.match(realFilePath)) {
+      debug('Full reload (hardcoded `restart` file) %s', realFilePath)
+      return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
+    }
+
+    /**
+     * If the file is not reloadable according to the dependency tree,
+     * we trigger a full reload.
      */
     const isReloadable = this.#dependencyTree.isReloadable(realFilePath)
     if (!isReloadable) {
-      debug('Full reload %s', realFilePath)
+      debug('Full reload (not-reloadable file) %s', realFilePath)
       return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
     }
 
@@ -159,6 +169,7 @@ export class HotHookLoader {
 
     const result = await nextResolve(specifier, context)
     const resultUrl = new URL(result.url)
+
     if (resultUrl.protocol !== 'file:') {
       return result
     }
@@ -185,6 +196,7 @@ export class HotHookLoader {
     const version = this.#dependencyTree.getVersion(resultPath).toString()
     resultUrl.searchParams.set('hot-hook', version)
 
+    debug('Resolving %s with version %s', resultPath, version)
     return { ...result, url: resultUrl.href }
   }
 }

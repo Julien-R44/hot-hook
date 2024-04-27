@@ -13,7 +13,7 @@
 |
 | This file registers the "ts-node/esm" hook with the Node.js module system
 | and then imports the "bin/console.ts" file.
-|
+|  
 */
 
 /**

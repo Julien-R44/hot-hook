@@ -39,7 +39,7 @@ export function App() {
       nodes.push({
         shape: 'box',
         id: id,
-        label: item.path,
+        label: `${item.path} | Version ${item.version}`,
         margin: { top: 13, bottom: 13, left: 13, right: 13 },
         borderWidth: 3,
         shadow: true,
@@ -65,7 +65,6 @@ export function App() {
     const container = document.getElementById('network')!
     new Network(container, dataVis, {
       interaction: { hover: true },
-      layout: {},
       physics: {
         enabled: true,
         barnesHut: {

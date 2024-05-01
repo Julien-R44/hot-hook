@@ -143,7 +143,7 @@ export class HotHookLoader {
       url = parsedUrl.href
     }
 
-    if (context.importAttributes.hot) {
+    if (context.importAttributes?.hot) {
       delete context.importAttributes.hot
     }
 
@@ -183,7 +183,7 @@ export class HotHookLoader {
     } else {
       const parentPath = fileURLToPath(parentUrl)
       const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
-      const reloadable = context.importAttributes.hot === 'true' ? true : isHardcodedBoundary
+      const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
 
       this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
     }

@@ -1,11 +1,12 @@
 import fs from 'fs-extra'
+import { join } from 'desm'
+import path from 'node:path'
 import pTimeout from 'p-timeout'
 import { pEvent } from 'p-event'
-import path, { join } from 'node:path'
 import { getActiveTest } from '@japa/runner'
 import { NodeOptions, execaNode } from 'execa'
 
-export const projectRoot = join(import.meta.dirname, '../')
+export const projectRoot = join(import.meta.url, '../')
 
 export async function fakeInstall(destination: string) {
   const { name: packageName, bin = {} } = await fs.readJson(

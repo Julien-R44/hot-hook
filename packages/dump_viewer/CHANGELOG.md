@@ -1,5 +1,13 @@
 # @hot-hook/dump-viewer
 
+## 0.3.5
+
+### Patch Changes
+
+- 89c2a60: Add support for Node.js 20. We removed the direct usage of `importAttributes` that was only introduced in Node.js 20.9. Hot-hook should works fine with Node.js 20.0.0 and above.
+- Updated dependencies [89c2a60]
+  - hot-hook@0.2.5
+
 ## 0.3.4
 
 ### Patch Changes

@@ -1,4 +1,4 @@
-import { join } from 'node:path'
+import { join } from 'desm'
 import { readFile } from 'node:fs/promises'
 
 /**
@@ -14,7 +14,7 @@ export async function dumpViewer() {
   /**
    * Load the HTML content and replace the placeholder with the dump
    */
-  const htmlLocation = join(import.meta.dirname, 'index.html')
+  const htmlLocation = join(import.meta.url, 'index.html')
   let html = await readFile(htmlLocation, 'utf8')
   html = html.replace('$__hot_hook_placeholder__', JSON.stringify(dump))
 

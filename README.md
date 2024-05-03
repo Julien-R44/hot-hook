@@ -312,6 +312,12 @@ Then access your server's `/dump-viewer` URL to view the graph:
 
 If you are looking for a more complete HMR solution, you can take a look at [dynohot](https://github.com/braidnetworks/dynohot)
 
+## Sponsors
+
+If you like this project, [please consider supporting it by sponsoring it](https://github.com/sponsors/Julien-R44/). It will help a lot to maintain and improve it. Thanks a lot !
+
+![](https://github.com/julien-r44/static/blob/main/sponsorkit/sponsors.png?raw=true)
+
 ## Credits
 
 Hot Hook was initially forked from [hot-esm](https://github.com/vinsonchuong/hot-esm) by Vinson Chuong. Thanks a lot for the initial work!

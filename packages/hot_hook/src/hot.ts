@@ -45,7 +45,16 @@ class Hot {
   async init(options: InitOptions) {
     this.#options = Object.assign(
       {
-        ignore: ['**/node_modules/**'],
+        ignore: [
+          '**/node_modules/**',
+          /**
+           * Vite has a bug where it create multiple files with a
+           * timestamp. This cause hot-hook to restart in loop.
+           * See https://github.com/vitejs/vite/issues/13267
+           */
+          '**/vite.config.js.timestamp*',
+          '**/vite.config.ts.timestamp*',
+        ],
         restart: ['.env'],
       },
       options

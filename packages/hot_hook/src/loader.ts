@@ -1,7 +1,7 @@
 import chokidar from 'chokidar'
+import { fileURLToPath } from 'node:url'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
-import { fileURLToPath } from 'node:url'
 import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
@@ -9,6 +9,7 @@ import debug from './debug.js'
 import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
+import { DynamicImportChecker } from './dynamic_import_checker.js'
 
 export class HotHookLoader {
   #options: InitializeHookOptions
@@ -19,6 +20,7 @@ export class HotHookLoader {
   #pathIgnoredMatcher!: Matcher
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher
+  #dynamicImportChecker!: DynamicImportChecker
 
   constructor(options: InitializeHookOptions) {
     this.#options = options
@@ -28,6 +30,7 @@ export class HotHookLoader {
     if (options.root) this.#initialize(options.root)
 
     this.#dependencyTree = new DependencyTree({ root: options.root })
+    this.#dynamicImportChecker = new DynamicImportChecker(this.#projectRoot)
     this.#messagePort?.on('message', (message) => this.#onMessage(message))
   }
 
@@ -58,6 +61,12 @@ export class HotHookLoader {
   async #onFileChange(relativeFilePath: string) {
     const filePath = pathResolve(relativeFilePath)
     const realFilePath = await realpath(filePath)
+
+    /**
+     * Invalidate the dynamic import cache for the file since we
+     * gonna need to recheck the dynamic imports.
+     */
+    this.#dynamicImportChecker.invalidateCache(filePath)
 
     /**
      * If the file is an hardcoded reload file, we trigger a full reload.
@@ -184,6 +193,10 @@ export class HotHookLoader {
       const parentPath = fileURLToPath(parentUrl)
       const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
       const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
+
+      if (reloadable) {
+        this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(parentPath, specifier)
+      }
 
       this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
     }

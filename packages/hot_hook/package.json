@@ -35,6 +35,7 @@
   "dependencies": {
     "chokidar": "^3.6.0",
     "fast-glob": "^3.3.2",
+    "parse-imports": "^2.2.1",
     "picomatch": "^4.0.2",
     "read-package-up": "^11.0.0"
   },

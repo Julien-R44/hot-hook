@@ -39,8 +39,8 @@ importers:
         specifier: ^11.0.4
         version: 11.0.4
       '@types/node':
-        specifier: ^20.16.9
-        version: 20.16.9
+        specifier: ^22.7.3
+        version: 22.7.3
       '@types/supertest':
         specifier: ^6.0.2
         version: 6.0.2
@@ -76,7 +76,7 @@ importers:
         version: 7.0.0
       ts-node:
         specifier: ^10.9.2
-        version: 10.9.2(@swc/core@1.7.26)(@types/node@20.16.9)(typescript@5.6.2)
+        version: 10.9.2(@swc/core@1.7.26)(@types/node@22.7.3)(typescript@5.6.2)
       typescript:
         specifier: ^5.6.2
         version: 5.6.2
@@ -1560,9 +1560,6 @@ packages:
 
   '@types/node@20.12.7':
     resolution: {integrity: sha512-wq0cICSkRLVaf3UGLMGItu/PtdY7oaXaI/RVU+xliKVOtRna3PRY57ZDfztpDL0n11vfymMUnXv8QwYCO7L1wg==}
-
-  '@types/node@20.16.9':
-    resolution: {integrity: sha512-rkvIVJxsOfBejxK7I0FO5sa2WxFmJCzoDwcd88+fq/CUfynNywTo/1/T6hyFz22CyztsnLS9nVlHOnTI36RH5w==}
 
   '@types/node@22.7.3':
     resolution: {integrity: sha512-qXKfhXXqGTyBskvWEzJZPUxSslAiLaB6JGP1ic/XTH9ctGgzdgYguuLP1C601aRTSDNlLb0jbKqXjZ48GNraSA==}
@@ -5414,7 +5411,7 @@ snapshots:
       '@jest/schemas': 29.6.3
       '@types/istanbul-lib-coverage': 2.0.6
       '@types/istanbul-reports': 3.0.4
-      '@types/node': 20.16.9
+      '@types/node': 22.7.3
       '@types/yargs': 17.0.32
       chalk: 4.1.2
 
@@ -5797,7 +5794,7 @@ snapshots:
   '@types/fs-extra@11.0.4':
     dependencies:
       '@types/jsonfile': 6.1.4
-      '@types/node': 20.16.9
+      '@types/node': 22.7.3
 
   '@types/hammerjs@2.0.45': {}
 
@@ -5822,7 +5819,7 @@ snapshots:
 
   '@types/jsonfile@6.1.4':
     dependencies:
-      '@types/node': 20.16.9
+      '@types/node': 22.7.3
 
   '@types/methods@1.1.4': {}
 
@@ -5833,10 +5830,6 @@ snapshots:
   '@types/node@20.12.7':
     dependencies:
       undici-types: 5.26.5
-
-  '@types/node@20.16.9':
-    dependencies:
-      undici-types: 6.19.8
 
   '@types/node@22.7.3':
     dependencies:
@@ -5858,7 +5851,7 @@ snapshots:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.16.9
+      '@types/node': 22.7.3
 
   '@types/supertest@6.0.2':
     dependencies:
@@ -8709,14 +8702,14 @@ snapshots:
     optionalDependencies:
       '@swc/core': 1.5.0
 
-  ts-node@10.9.2(@swc/core@1.7.26)(@types/node@20.16.9)(typescript@5.6.2):
+  ts-node@10.9.2(@swc/core@1.7.26)(@types/node@22.7.3)(typescript@5.6.2):
     dependencies:
       '@cspotcode/source-map-support': 0.8.1
       '@tsconfig/node10': 1.0.10
       '@tsconfig/node12': 1.0.11
       '@tsconfig/node14': 1.0.3
       '@tsconfig/node16': 1.0.4
-      '@types/node': 20.16.9
+      '@types/node': 22.7.3
       acorn: 8.11.3
       acorn-walk: 8.3.2
       arg: 4.1.3

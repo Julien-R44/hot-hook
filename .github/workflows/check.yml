@@ -17,7 +17,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack use pnpm@*
 
       - name: Install dependencies
         run: pnpm install
@@ -39,12 +39,12 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack use pnpm@*
 
       - name: Install dependencies
         run: |
           pnpm install
-          pnpm -r build
+          pnpm build
 
       - name: Typecheck
         run: pnpm typecheck
@@ -68,7 +68,7 @@ jobs:
       - name: Install pnpm
         run: |
           corepack enable
-          corepack prepare pnpm@latest --activate
+          corepack use pnpm@*
 
       - name: Install dependencies
         run: |

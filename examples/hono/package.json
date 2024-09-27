@@ -9,11 +9,11 @@
   "devDependencies": {
     "hot-hook": "workspace:*",
     "@hot-hook/runner": "workspace:*",
-    "tsx": "^3.12.2"
+    "tsx": "^4.19.1"
   },
   "dependencies": {
-    "@hono/node-server": "^1.9.0",
-    "hono": "^4.1.4"
+    "@hono/node-server": "^1.13.1",
+    "hono": "^4.6.3"
   },
   "hotHook": {
     "boundaries": [

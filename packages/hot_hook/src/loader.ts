@@ -1,4 +1,4 @@
-import chokidar from 'chokidar'
+import chokidar, { type FSWatcher } from 'chokidar'
 import { fileURLToPath } from 'node:url'
 import { realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
@@ -16,7 +16,7 @@ export class HotHookLoader {
   #projectRoot!: string
   #reloadMatcher!: Matcher
   #messagePort?: MessagePort
-  #watcher!: chokidar.FSWatcher
+  #watcher!: FSWatcher
   #pathIgnoredMatcher!: Matcher
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher

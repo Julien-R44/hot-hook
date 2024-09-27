@@ -30,10 +30,10 @@
     "prepublishOnly": "pnpm lint && pnpm build"
   },
   "devDependencies": {
-    "@types/picomatch": "^2.3.3"
+    "@types/picomatch": "^3.0.1"
   },
   "dependencies": {
-    "chokidar": "^3.6.0",
+    "chokidar": "^4.0.1",
     "fast-glob": "^3.3.2",
     "parse-imports": "^2.2.1",
     "picomatch": "^4.0.2",

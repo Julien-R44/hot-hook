@@ -20,7 +20,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@adonisjs/ace": "^13.0.0",
+    "@adonisjs/ace": "^13.2.0",
     "execa": "^8.0.1"
   },
   "author": "Julien Ripouteau <julien@ripouteau.com>",

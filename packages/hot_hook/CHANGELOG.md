@@ -1,5 +1,11 @@
 # hot-hook
 
+## 0.3.1
+
+### Patch Changes
+
+- b639a3c: On some linux distributions, or on some IDE/Text-Editor, only the `unlink` message is received by chokidar when a file is changed/saved. This commit now treats the `unlink` message as a file change, and therefore triggers the HMR/Full-reload logic
+
 ## 0.3.0
 
 ### Minor Changes

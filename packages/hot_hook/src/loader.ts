@@ -1,6 +1,6 @@
 import chokidar, { type FSWatcher } from 'chokidar'
 import { fileURLToPath } from 'node:url'
-import { realpath } from 'node:fs/promises'
+import { access, realpath } from 'node:fs/promises'
 import { MessagePort } from 'node:worker_threads'
 import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
@@ -46,6 +46,18 @@ export class HotHookLoader {
   }
 
   /**
+   * Check if a file exists
+   */
+  async #checkIfFileExists(filePath: string) {
+    try {
+      await access(filePath)
+      return true
+    } catch {
+      return false
+    }
+  }
+
+  /**
    * When a message is received from the main thread
    */
   #onMessage(message: any) {
@@ -59,8 +71,20 @@ export class HotHookLoader {
    * When a file changes, invalidate it and its dependents.
    */
   async #onFileChange(relativeFilePath: string) {
+    debug('File change %s', relativeFilePath)
+
     const filePath = pathResolve(relativeFilePath)
     const realFilePath = await realpath(filePath)
+
+    /**
+     * First check if file still exists. If not, we must remove it from the
+     * dependency tree
+     */
+    const isFileExist = await this.#checkIfFileExists(realFilePath)
+    if (!isFileExist) {
+      debug('File does not exist anymore %s', realFilePath)
+      return this.#dependencyTree.remove(realFilePath)
+    }
 
     /**
      * Invalidate the dynamic import cache for the file since we
@@ -101,11 +125,7 @@ export class HotHookLoader {
     const watcher = chokidar.watch([])
 
     watcher.on('change', this.#onFileChange.bind(this))
-    watcher.on('unlink', (relativeFilePath) => {
-      const filePath = pathResolve(relativeFilePath)
-      debug('Deleted %s', filePath)
-      this.#dependencyTree.remove(filePath)
-    })
+    watcher.on('unlink', this.#onFileChange.bind(this))
 
     return watcher
   }

@@ -10,6 +10,7 @@ import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
+import { FileNotImportedDynamicallyException } from './file_not_imported_dynamically_exception.js'
 
 export class HotHookLoader {
   #options: InitializeHookOptions
@@ -215,7 +216,20 @@ export class HotHookLoader {
       const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
 
       if (reloadable) {
-        this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(parentPath, specifier)
+        try {
+          await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
+            parentPath,
+            specifier
+          )
+        } catch (e) {
+          if (e instanceof FileNotImportedDynamicallyException) {
+            debug('File not imported dynamically %s', resultPath)
+            this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable: false })
+            return result
+          }
+
+          throw e
+        }
       }
 
       this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })

@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises'
 import { parseImports } from 'parse-imports'
-import { relative } from 'node:path'
+import { FileNotImportedDynamicallyException } from './file_not_imported_dynamically_exception.js'
 
 /**
  * This class is responsible for checking if a given specifier
@@ -34,9 +34,7 @@ export class DynamicImportChecker {
     this.cache.set(cacheKey, currentCache.set(specifier, isFileDynamicallyImportedFromParent))
 
     if (!isFileDynamicallyImportedFromParent) {
-      throw new Error(
-        `The import "${specifier}" is not imported dynamically from ${relative(this.projectRoot, parentPath)}.\nYou must use dynamic import to make it reloadable (HMR) with hot-hook.`
-      )
+      throw new FileNotImportedDynamicallyException(parentPath, specifier, this.projectRoot)
     }
 
     return isFileDynamicallyImportedFromParent

@@ -100,11 +100,11 @@ importers:
         specifier: ^1.3.0
         version: 1.3.0(eslint@8.57.0)(prettier@3.2.5)(typescript@5.4.5)
       '@adonisjs/prettier-config':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@adonisjs/tsconfig':
-        specifier: ^1.3.0
-        version: 1.3.0
+        specifier: ^1.4.0
+        version: 1.4.0
       '@japa/assert':
         specifier: ^3.0.0
         version: 3.0.0(@japa/runner@3.1.4)(openapi-types@12.1.3)
@@ -373,18 +373,12 @@ packages:
     resolution: {integrity: sha512-CKxIpWBEX/e6duRE6qq8GJ90NQC8q26Q0aSuj+bUO6X4mgcgawxhciJTfpxmJNj9KEUmNAeHOn0hSpTITdk8Lg==}
     engines: {node: '>=18.16.0'}
 
-  '@adonisjs/prettier-config@1.3.0':
-    resolution: {integrity: sha512-StwX1dGsf8Yt5Vz48evSDGKMS5iOEgMHUYcDhkQJ79NUXopJ5PiAqb/GbjvA+XmEa+aZNPHqmafgFbfKlLAFZA==}
-
   '@adonisjs/prettier-config@1.4.0':
     resolution: {integrity: sha512-6MqbAvGlxf8iNHwGiJmtMKMhwoxRNtpzuLV8F93lQtsLluU1fjF8EDDpTPl9RrQblt7+6zY28K5nh1rmmXk8mQ==}
 
   '@adonisjs/repl@4.0.1':
     resolution: {integrity: sha512-fgDRC5I8RBKHzsJPM4rRQF/OWI0K9cNihCIf4yHdqQt3mhFqWSOUjSi4sXWykdICLiddmyBO86au7i0d0dj5vQ==}
     engines: {node: '>=18.16.0'}
-
-  '@adonisjs/tsconfig@1.3.0':
-    resolution: {integrity: sha512-+nOykDG44b4JSAdsrTdh5HuZqJpr6F+dHpfNYgHfYsFJIEtZo8plHilZAM7iabCRN5R49SPv5p8Ixcp47Rr50g==}
 
   '@adonisjs/tsconfig@1.4.0':
     resolution: {integrity: sha512-go5KlxE8jJaeoIRzm51PcF2YJSK5i022douVk9OjAqvDiU1t2UepcDoEsSiEOgogUDojp9kbRQmFyf0y0YqvOg==}
@@ -4647,8 +4641,6 @@ snapshots:
       abstract-logging: 2.0.1
       pino: 8.21.0
 
-  '@adonisjs/prettier-config@1.3.0': {}
-
   '@adonisjs/prettier-config@1.4.0':
     dependencies:
       prettier-edgejs: 0.2.33
@@ -4657,8 +4649,6 @@ snapshots:
     dependencies:
       '@poppinss/colors': 4.1.3
       string-width: 7.1.0
-
-  '@adonisjs/tsconfig@1.3.0': {}
 
   '@adonisjs/tsconfig@1.4.0': {}
 

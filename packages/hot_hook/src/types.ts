@@ -1,7 +1,7 @@
 import { MessagePort } from 'node:worker_threads'
 
 export type MessageChannelMessage =
-  | { type: 'hot-hook:full-reload'; path: string }
+  | { type: 'hot-hook:full-reload'; path: string; shouldBeReloadable?: boolean }
   | { type: 'hot-hook:invalidated'; paths: string[] }
 
 export interface InitOptions {
@@ -48,11 +48,22 @@ export interface InitOptions {
    * @default ['.env']
    */
   restart?: string[]
+
+  /**
+   * If true, the hook will throw an error if a boundary is not dynamically
+   * imported.
+   */
+  throwWhenBoundariesAreNotDynamicallyImported?: boolean
 }
 
 export type InitializeHookOptions = Pick<
   InitOptions,
-  'ignore' | 'root' | 'rootDirectory' | 'boundaries' | 'restart'
+  | 'ignore'
+  | 'root'
+  | 'rootDirectory'
+  | 'boundaries'
+  | 'restart'
+  | 'throwWhenBoundariesAreNotDynamicallyImported'
 > & {
   /**
    * The message port to communicate with the parent thread.

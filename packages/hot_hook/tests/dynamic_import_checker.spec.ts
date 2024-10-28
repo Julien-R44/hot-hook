@@ -15,17 +15,11 @@ test.group('Dynamic Import Checker', () => {
       `
     )
 
-    const checker = new DynamicImportChecker(fs.basePath)
-
+    const checker = new DynamicImportChecker()
     const path = join(fs.basePath, 'app.ts')
 
-    await assert.rejects(async () => {
-      await checker.ensureFileIsImportedDynamicallyFromParent(path, './foo')
-    })
-
-    await assert.rejects(async () => {
-      await checker.ensureFileIsImportedDynamicallyFromParent(path, '#app/aliases')
-    })
+    assert.isFalse(await checker.ensureFileIsImportedDynamicallyFromParent(path, './foo'))
+    assert.isFalse(await checker.ensureFileIsImportedDynamicallyFromParent(path, '#app/aliases'))
 
     assert.isTrue(await checker.ensureFileIsImportedDynamicallyFromParent(path, './bla'))
     assert.isTrue(await checker.ensureFileIsImportedDynamicallyFromParent(path, '#app/aliases-bla'))

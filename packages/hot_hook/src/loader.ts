@@ -10,7 +10,7 @@ import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
 import { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
-import { FileNotImportedDynamicallyException } from './file_not_imported_dynamically_exception.js'
+import { FileNotImportedDynamicallyException } from './errors/file_not_imported_dynamically_exception.js'
 
 export class HotHookLoader {
   #options: InitializeHookOptions
@@ -31,7 +31,7 @@ export class HotHookLoader {
     if (options.root) this.#initialize(options.root)
 
     this.#dependencyTree = new DependencyTree({ root: options.root })
-    this.#dynamicImportChecker = new DynamicImportChecker(this.#projectRoot)
+    this.#dynamicImportChecker = new DynamicImportChecker()
     this.#messagePort?.on('message', (message) => this.#onMessage(message))
   }
 
@@ -105,10 +105,14 @@ export class HotHookLoader {
      * If the file is not reloadable according to the dependency tree,
      * we trigger a full reload.
      */
-    const isReloadable = this.#dependencyTree.isReloadable(realFilePath)
-    if (!isReloadable) {
+    const { reloadable, shouldBeReloadable } = this.#dependencyTree.isReloadable(realFilePath)
+    if (!reloadable) {
       debug('Full reload (not-reloadable file) %s', realFilePath)
-      return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
+      return this.#messagePort?.postMessage({
+        type: 'hot-hook:full-reload',
+        path: realFilePath,
+        shouldBeReloadable: shouldBeReloadable,
+      })
     }
 
     /**
@@ -224,23 +228,33 @@ export class HotHookLoader {
       const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
 
       if (reloadable) {
-        try {
+        /**
+         * If supposed to be reloadable, we must ensure it is imported dynamically
+         * from the parent file. Otherwise, hot-hook can't invalidate the file
+         */
+        let isImportedDynamically =
           await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
             parentPath,
             specifier
           )
-        } catch (e) {
-          if (e instanceof FileNotImportedDynamicallyException) {
-            debug('File not imported dynamically %s', resultPath)
-            this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable: false })
-            return result
-          }
 
-          throw e
-        }
+        /**
+         * Throw an error if not dynamically imported and the option is set
+         */
+        if (!isImportedDynamically && this.#options.throwWhenBoundariesAreNotDynamicallyImported)
+          throw new FileNotImportedDynamicallyException(parentPath, specifier, this.#projectRoot)
+
+        /**
+         * Otherwise, just add the file as not-reloadable ( so it will trigger a full reload )
+         */
+        this.#dependencyTree.addDependency(parentPath, {
+          path: resultPath,
+          reloadable: isImportedDynamically,
+          isWronglyImported: !isImportedDynamically,
+        })
+      } else {
+        this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
       }
-
-      this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
     }
 
     if (this.#pathIgnoredMatcher.match(resultPath)) {

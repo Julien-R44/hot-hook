@@ -33,6 +33,11 @@ interface FileNode {
    * Version of the file. Incremented when the file is invalidated
    */
   version: number
+
+  /**
+   * Whether the file is not dynamically imported where it should be
+   */
+  isWronglyImported?: boolean
 }
 
 export default class DependencyTree {
@@ -69,7 +74,10 @@ export default class DependencyTree {
   /**
    * Add a dependency to a file
    */
-  addDependency(parentPath: string, dependency: { path: string; reloadable?: boolean }): void {
+  addDependency(
+    parentPath: string,
+    dependency: { path: string; reloadable?: boolean; isWronglyImported?: boolean }
+  ): void {
     let parentNode = this.#pathMap.get(parentPath)
     if (!parentNode) return
 
@@ -82,10 +90,12 @@ export default class DependencyTree {
         dependents: new Set(),
         dependencies: new Set(),
         reloadable: dependency.reloadable || false,
+        isWronglyImported: dependency.isWronglyImported || false,
       }
       this.#pathMap.set(dependency.path, childNode)
     } else {
       childNode.reloadable = dependency.reloadable || false
+      childNode.isWronglyImported = dependency.isWronglyImported || false
     }
 
     childNode.parents?.add(parentNode)
@@ -117,7 +127,7 @@ export default class DependencyTree {
       if (!invalidatedFiles.has(currentPath)) {
         const node = this.#pathMap.get(currentPath)
         if (!node) continue
-        if (!this.isReloadable(currentPath)) continue
+        if (!this.isReloadable(currentPath).reloadable) continue
 
         node.version++
         invalidatedFiles.add(currentPath)
@@ -159,30 +169,38 @@ export default class DependencyTree {
    *  need to do a FULL RELOAD.
    * - If all paths to reach the ROOT file go through reloadable files, then it means we can do HMR !
    */
-  isReloadable(path: string): boolean {
+  isReloadable(path: string) {
     const node = this.#pathMap.get(path)
     if (!node) throw new Error(`Node ${path} does not exist`)
 
-    const checkPathToRoot = (currentNode: FileNode, visited: Set<string> = new Set()): boolean => {
+    const checkPathToRoot = (
+      currentNode: FileNode,
+      visited: Set<string> = new Set()
+    ): { reloadable: boolean; shouldBeReloadable: boolean } => {
+      if (currentNode.isWronglyImported) {
+        return { reloadable: false, shouldBeReloadable: true }
+      }
+
       if (currentNode.reloadable) {
-        return true
+        return { reloadable: true, shouldBeReloadable: true }
       }
 
       if (visited.has(currentNode.path)) {
-        return true
+        return { reloadable: true, shouldBeReloadable: true }
       }
 
       visited.add(currentNode.path)
 
       if (!currentNode.parents || currentNode.parents.size === 0) {
-        return false
+        return { reloadable: false, shouldBeReloadable: false }
       }
 
       for (const parent of currentNode.parents) {
-        if (!checkPathToRoot(parent, new Set(visited))) return false
+        const { reloadable, shouldBeReloadable } = checkPathToRoot(parent, new Set(visited))
+        if (!reloadable) return { reloadable: false, shouldBeReloadable }
       }
 
-      return true
+      return { reloadable: true, shouldBeReloadable: true }
     }
 
     const result = checkPathToRoot(node)
@@ -194,12 +212,12 @@ export default class DependencyTree {
     const isNodeModule = (path: string) => path.includes('node_modules')
 
     return Array.from(this.#pathMap.values()).map((node) => ({
-      path: relative(rootDirname, node.path),
-      boundary: node.reloadable,
-      reloadable: isNodeModule(node.path) ? false : this.isReloadable(node.path),
       version: node.version,
-      dependencies: Array.from(node.dependencies).map((n) => relative(rootDirname, n.path)),
+      boundary: node.reloadable,
+      path: relative(rootDirname, node.path),
       dependents: Array.from(node.dependents).map((n) => relative(rootDirname, n.path)),
+      dependencies: Array.from(node.dependencies).map((n) => relative(rootDirname, n.path)),
+      reloadable: isNodeModule(node.path) ? false : this.isReloadable(node.path).reloadable,
     }))
   }
 }

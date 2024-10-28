@@ -315,4 +315,142 @@ test.group('Loader', () => {
     )
     assert.isDefined(result)
   }).disableTimeout()
+
+  test('full reload if file should be reloadable but is not dynamically imported', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module', hotHook: { boundaries: ['./app.js'] } })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+       import app from './app.js'
+
+       const server = http.createServer(async (request, response) => {
+         await app(request, response)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    await server.waitForOutput('Server is running')
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
+    await setTimeout(100)
+
+    const result = await pEvent(
+      server.child,
+      'message',
+      (message: any) =>
+        message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true
+    )
+    assert.isDefined(result)
+  }).disableTimeout()
+
+  test('send shouldBeReloadable if parent boundary is not dynamically importd', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module', hotHook: { boundaries: ['./app.js'] } })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+       import app from './app.js'
+
+       const server = http.createServer(async (request, response) => {
+         await app(request, response)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    await fs.create(
+      'app.js',
+      `
+      import { test } from './app2.js'
+
+      export default function(request, response) {
+        response.writeHead(200, {'Content-Type': 'text/plain'})
+        response.end('Hello World!')
+      }`
+    )
+    await fs.create(`app2.js`, `export function test() { return 'Hello World!' }`)
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    await server.waitForOutput('Server is running')
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
+
+    await fs.create(`app2.js`, `export function test() { return 'Hello Test!' }`)
+
+    await setTimeout(100)
+
+    const result = await pEvent(server.child, 'message', (message: any) => {
+      console.log(message)
+      return message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true
+    })
+    assert.isDefined(result)
+  }).disableTimeout()
+
+  test('throw error if file should be reloadable but is not dynamically imported and flag is set', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', {
+      type: 'module',
+      hotHook: { boundaries: ['./app.js'], throwWhenBoundariesAreNotDynamicallyImported: true },
+    })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+       import { hot } from 'hot-hook'
+       import { join } from 'node:path'
+       import app from './app.js'
+
+       const server = http.createServer(async (request, response) => {
+         await app(request, response)
+       })
+
+       server.listen(3333, () => {
+         console.log('Server is running')
+       })`
+    )
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    await assert.rejects(async () => await server.child!)
+  }).disableTimeout()
 })

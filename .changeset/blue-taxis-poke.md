@@ -2,11 +2,11 @@
 'hot-hook': minor
 ---
 
-Plus tot, avec cette release https://github.com/Julien-R44/hot-hook/releases/tag/hot-hook%400.3.0 on se contentait de throw et donc de killer l'app quand un fichier boundary n'était pas importé dynamiquement car cela empechait à hot-hook de hot-reloader. 
+Earlier, with this release https://github.com/Julien-R44/hot-hook/releases/tag/hot-hook%400.3.0 we were just throwing and thus killing the app when a boundary file was not dynamically imported because it prevented hot-hook from hot-reloading.
 
-Maintenant, on ne throw plus par défault l'erreur, on emet simplement un message de type "hot-hook:full-reload" au process parent, qui lui sera chargé de restart l'app entière. Ce message "hot-hook:full-reload" n'est pas nouveau, il était déjà utilisé pour les fichiers qui devaient trigger un full reload. 
+Now, we no longer throw the error by default, we simply emit a message of type "hot-hook:full-reload" to the parent process, which will be responsible for restarting the entire app. This "hot-hook:full-reload" message is not new, it was already used for files that should trigger a full reload.
 
-Si jamais vous souhaitez quand meme throw l'erreur, alors vous pouvez passer l'options `throwWhenBoundariesAreNotDynamicallyImported` à true, quand vous appellez `hot.init` ou dans votre `package.json` : 
+If you still want to throw the error, then you can pass the `throwWhenBoundariesAreNotDynamicallyImported` option to true, when you call `hot.init` or in your `package.json`:
 
 ```json
 {

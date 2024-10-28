@@ -7,8 +7,8 @@
   "scripts": {
     "start": "node bin/server.js",
     "dev": "node ace serve --hmr",
-    "format": "prettier --write .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "format": "prettier --write ."
   },
   "imports": {
     "#controllers/*": "./app/controllers/*.js",

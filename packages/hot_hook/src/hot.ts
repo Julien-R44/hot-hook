@@ -19,7 +19,12 @@ class Hot {
    */
   #onMessage(message: MessageChannelMessage) {
     if (message.type === 'hot-hook:full-reload') {
-      process.send?.({ type: 'hot-hook:full-reload', path: message.path })
+      process.send?.({
+        type: 'hot-hook:full-reload',
+        path: message.path,
+        shouldBeReloadable: message.shouldBeReloadable,
+      })
+
       this.#options.onFullReloadAsked?.()
     }
 
@@ -79,6 +84,8 @@ class Hot {
         boundaries: this.#options.boundaries,
         messagePort: this.#messageChannel.port2,
         rootDirectory: this.#options.rootDirectory,
+        throwWhenBoundariesAreNotDynamicallyImported:
+          this.#options.throwWhenBoundariesAreNotDynamicallyImported,
       } satisfies InitializeHookOptions,
     })
 

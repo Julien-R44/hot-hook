@@ -1,6 +1,5 @@
 import { readFile } from 'node:fs/promises'
 import { parseImports } from 'parse-imports'
-import { relative } from 'node:path'
 
 /**
  * This class is responsible for checking if a given specifier
@@ -11,16 +10,11 @@ import { relative } from 'node:path'
  */
 export class DynamicImportChecker {
   private cache: Map<string, Map<string, boolean>> = new Map()
-  private projectRoot: string
-
-  constructor(projectRoot: string) {
-    this.projectRoot = projectRoot
-  }
 
   async ensureFileIsImportedDynamicallyFromParent(parentPath: string, specifier: string) {
     const cacheKey = parentPath
     if (this.cache.has(cacheKey) && this.cache.get(cacheKey)!.has(specifier)) {
-      return this.cache.get(cacheKey)!.get(specifier)
+      return this.cache.get(cacheKey)!.get(specifier)!
     }
 
     const parentCode = await readFile(parentPath, 'utf-8')
@@ -32,12 +26,6 @@ export class DynamicImportChecker {
 
     const currentCache = this.cache.get(cacheKey) ?? new Map()
     this.cache.set(cacheKey, currentCache.set(specifier, isFileDynamicallyImportedFromParent))
-
-    if (!isFileDynamicallyImportedFromParent) {
-      throw new Error(
-        `The import "${specifier}" is not imported dynamically from ${relative(this.projectRoot, parentPath)}.\nYou must use dynamic import to make it reloadable (HMR) with hot-hook.`
-      )
-    }
 
     return isFileDynamicallyImportedFromParent
   }

@@ -70,5 +70,9 @@ export function runProcess(scriptPath: string, options?: NodeOptions) {
         message: `Timeout waiting for "${output}"`,
       })
     },
+
+    async waitForExit() {
+      await child
+    },
   }
 }

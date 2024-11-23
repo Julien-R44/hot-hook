@@ -24,7 +24,7 @@ export class Serve extends BaseCommand {
   declare scriptArgs: string[]
 
   #httpServer?: ExecaChildProcess<string>
-  #onReloadAsked?: (updatedFile: string) => void
+  #onReloadAsked?: (updatedFile: string, shouldBeReloadable: boolean) => void
   #onFileInvalidated?: (invalidatedFiles: string[]) => void
 
   /**
@@ -57,7 +57,7 @@ export class Serve extends BaseCommand {
       if (typeof message !== 'object') return
 
       if ('type' in message && message.type === 'hot-hook:full-reload') {
-        this.#onReloadAsked?.(message.path)
+        this.#onReloadAsked?.(message.path, message.shouldBeReloadable)
       }
 
       if ('type' in message && message.type === 'hot-hook:invalidated') {
@@ -82,11 +82,17 @@ export class Serve extends BaseCommand {
     this.#log(`Starting ${this.colors.green(this.script)}`)
     this.#startHTTPServer()
 
-    this.#onReloadAsked = (path) => {
+    this.#onReloadAsked = (path, shouldBeReloadable) => {
       this.#clearScreen()
 
       const relativePath = relative(process.cwd(), path)
-      this.#log(`${this.colors.green(relativePath)} changed. Restarting.`)
+      const message = `${this.colors.green(relativePath)} changed. Restarting.`
+      if (!shouldBeReloadable) {
+        this.#log(message)
+      } else {
+        const warning = `${this.colors.yellow('This file should be reloadable, but a parent boundary was not dynamically imported.')}`
+        this.#log(`${message}\n${warning}`)
+      }
 
       this.#httpServer?.removeAllListeners()
       this.#httpServer?.kill('SIGKILL')

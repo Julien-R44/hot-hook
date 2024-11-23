@@ -14,5 +14,7 @@ const hotHookConfig = packageJson.hotHook
 await hot.init({
   ...(hotHookConfig || {}),
   rootDirectory: dirname(packageJsonPath),
+  throwWhenBoundariesAreNotDynamicallyImported:
+    hotHookConfig?.throwWhenBoundariesAreNotDynamicallyImported ?? false,
   root: hotHookConfig?.root ? resolve(packageJsonPath, hotHookConfig.root) : undefined,
 })

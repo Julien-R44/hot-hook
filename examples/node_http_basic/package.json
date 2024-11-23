@@ -6,8 +6,8 @@
     "dev:tsnode": "hot-runner --node-args=--import=./tsnode.esm.js --node-args=--import=hot-hook/register src/index.ts"
   },
   "devDependencies": {
-    "hot-hook": "workspace:*",
-    "@hot-hook/runner": "workspace:*"
+    "@hot-hook/runner": "workspace:*",
+    "hot-hook": "workspace:*"
   },
   "hotHook": {
     "boundaries": [

@@ -7,13 +7,13 @@
     "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register src/index.tsx"
   },
   "devDependencies": {
-    "hot-hook": "workspace:*",
     "@hot-hook/runner": "workspace:*",
-    "tsx": "^4.19.1"
+    "hot-hook": "workspace:*",
+    "tsx": "^4.19.2"
   },
   "dependencies": {
-    "@hono/node-server": "^1.13.1",
-    "hono": "^4.6.3"
+    "@hono/node-server": "^1.13.7",
+    "hono": "^4.6.11"
   },
   "hotHook": {
     "boundaries": [

@@ -32,6 +32,7 @@
     "p-event": "^6.0.1",
     "p-timeout": "^6.1.2",
     "prettier": "^3.3.3",
+    "prettier-edgejs": "^0.2.33",
     "supertest": "^7.0.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.6.2"

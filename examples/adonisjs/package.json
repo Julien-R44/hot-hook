@@ -7,7 +7,6 @@
   "scripts": {
     "start": "node bin/server.js",
     "dev": "node ace serve --hmr",
-    "lint": "eslint .",
     "format": "prettier --write .",
     "typecheck": "tsc --noEmit"
   },

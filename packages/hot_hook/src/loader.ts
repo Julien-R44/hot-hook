@@ -210,6 +210,14 @@ export class HotHookLoader {
       this.#initialize(resultPath)
       return result
     } else {
+      /**
+       * Sometimes we receive a parentUrl that is just `data:`. I didn't really understand
+       * why yet, for now we just ignore these cases.
+       *
+       * See https://github.com/tailwindlabs/tailwindcss/discussions/15105
+       */
+      if (parentUrl.protocol !== 'file:') return result
+
       const parentPath = fileURLToPath(parentUrl)
       const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
       const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary

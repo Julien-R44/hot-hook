@@ -1,5 +1,11 @@
 # @hot-hook/runner
 
+## 0.1.0
+
+### Minor Changes
+
+- 0ab1205: The runner will now full-reload the application when a file changes and the boundaries are not dynamically imported.
+
 ## 0.0.7
 
 ### Patch Changes

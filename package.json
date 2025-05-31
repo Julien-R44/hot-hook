@@ -1,8 +1,12 @@
 {
   "name": "@hot-hook/monorepo",
-  "description": "Monorepo for Hot Hook",
-  "version": "0.0.0",
   "type": "module",
+  "version": "0.0.0",
+  "packageManager": "pnpm@10.11.0",
+  "description": "Monorepo for Hot Hook",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "ISC",
+  "keywords": [],
   "scripts": {
     "typecheck": "pnpm run -r --parallel typecheck",
     "lint": "eslint . --ext=.ts",
@@ -19,6 +23,7 @@
     "@japa/file-system": "2.3.0",
     "@japa/runner": "3.1.4",
     "@japa/snapshot": "2.0.6",
+    "@julr/tooling-configs": "^4.0.0",
     "@swc/core": "^1.11.29",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^22.15.29",
@@ -37,8 +42,5 @@
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
   },
-  "packageManager": "pnpm@10.11.0",
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "ISC",
-  "keywords": []
+  "prettier": "@julr/tooling-configs/prettier"
 }

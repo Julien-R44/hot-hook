@@ -1,15 +1,22 @@
 {
   "name": "@hot-hook/runner",
-  "description": "Runner for applications that use hot-hook",
-  "version": "0.1.0",
-  "main": "build/bin/run.js",
   "type": "module",
-  "files": [
-    "build"
+  "version": "0.1.0",
+  "description": "Runner for applications that use hot-hook",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
+  "keywords": [
+    "hot-hook",
+    "runner",
+    "hot-reload"
   ],
+  "main": "build/bin/run.js",
   "bin": {
     "hot-runner": "build/bin/run.js"
   },
+  "files": [
+    "build"
+  ],
   "scripts": {
     "clean": "del-cli build",
     "build": "tsc",
@@ -23,13 +30,6 @@
     "@adonisjs/ace": "^13.3.0",
     "execa": "^8.0.1"
   },
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
-  "keywords": [
-    "hot-hook",
-    "runner",
-    "hot-reload"
-  ],
   "publishConfig": {
     "access": "public",
     "tag": "latest"

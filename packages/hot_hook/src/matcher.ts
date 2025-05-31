@@ -1,5 +1,5 @@
-import { resolve } from 'node:path'
 import picomatch from 'picomatch'
+import { resolve } from 'node:path'
 
 export class Matcher {
   #matcher: picomatch.Matcher

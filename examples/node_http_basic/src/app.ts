@@ -1,4 +1,4 @@
-import { IncomingMessage, ServerResponse } from 'node:http'
+import type { IncomingMessage, ServerResponse } from 'node:http'
 
 /**
  * Try updating this function and saving the file while the server is running.

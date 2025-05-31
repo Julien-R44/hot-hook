@@ -1,14 +1,16 @@
 {
   "name": "hot-hook",
-  "description": "Easy hot module reloading (HMR) for Node.js and ESM",
-  "version": "0.4.0",
-  "main": "index.js",
   "type": "module",
-  "files": [
-    "build",
-    "!build/tests",
-    "!build/bin",
-    "import-meta.d.ts"
+  "version": "0.4.0",
+  "description": "Easy hot module reloading (HMR) for Node.js and ESM",
+  "author": "Julien Ripouteau <julien@ripouteau.com>",
+  "license": "MIT",
+  "keywords": [
+    "hmr",
+    "hot",
+    "reload",
+    "esm",
+    "node"
   ],
   "exports": {
     ".": "./build/src/hot.js",
@@ -18,6 +20,13 @@
       "types": "./import-meta.d.ts"
     }
   },
+  "main": "index.js",
+  "files": [
+    "!build/bin",
+    "!build/tests",
+    "build",
+    "import-meta.d.ts"
+  ],
   "scripts": {
     "clean": "del-cli build",
     "typecheck": "tsc --noEmit",
@@ -29,9 +38,6 @@
     "build": "pnpm clean && tsc",
     "prepublishOnly": "pnpm lint && pnpm build"
   },
-  "devDependencies": {
-    "@types/picomatch": "^4.0.0"
-  },
   "dependencies": {
     "chokidar": "^4.0.3",
     "fast-glob": "^3.3.3",
@@ -39,15 +45,9 @@
     "picomatch": "^4.0.2",
     "read-package-up": "^11.0.0"
   },
-  "author": "Julien Ripouteau <julien@ripouteau.com>",
-  "license": "MIT",
-  "keywords": [
-    "hmr",
-    "hot",
-    "reload",
-    "esm",
-    "node"
-  ],
+  "devDependencies": {
+    "@types/picomatch": "^4.0.0"
+  },
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },

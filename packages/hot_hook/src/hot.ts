@@ -2,7 +2,7 @@ import { register } from 'node:module'
 import { MessageChannel } from 'node:worker_threads'
 
 import debug from './debug.js'
-import { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
+import type { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
 
 class Hot {
   #options!: InitOptions
@@ -33,9 +33,8 @@ class Hot {
         process.send?.({ type: 'hot-hook:full-reload', paths: message.paths })
         this.#options.onFullReloadAsked?.()
         return
-      } else {
-        process.send?.({ type: 'hot-hook:invalidated', paths: message.paths })
       }
+      process.send?.({ type: 'hot-hook:invalidated', paths: message.paths })
 
       for (const url of message.paths) {
         const callback = this.#disposeCallbacks.get(url)
@@ -93,7 +92,7 @@ class Hot {
   }
 
   /**
-   * import.meta.hot.dispose internally calls this method
+   * Import.meta.hot.dispose internally calls this method
    *
    * Dispose is useful for cleaning up resources when a module is reloaded
    */
@@ -102,7 +101,7 @@ class Hot {
   }
 
   /**
-   * import.meta.hot.decline internally calls this method
+   * Import.meta.hot.decline internally calls this method
    *
    * Decline allows you to mark a module as not reloadable and
    * will trigger a full server reload when it changes
@@ -124,8 +123,8 @@ class Hot {
   }
 }
 
-// @ts-ignore
+// @ts-expect-error ignore
 const hot: Hot = globalThis.hot || new Hot()
-// @ts-ignore
+// @ts-expect-error ignore
 globalThis.hot = hot
 export { hot }

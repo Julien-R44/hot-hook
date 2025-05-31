@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/custom-error-definition */
 import { relative } from 'node:path'
 
 export class FileNotImportedDynamicallyException extends Error {

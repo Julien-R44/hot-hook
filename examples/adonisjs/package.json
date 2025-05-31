@@ -1,8 +1,8 @@
 {
   "name": "adonisjs",
+  "type": "module",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
   "license": "UNLICENSED",
   "scripts": {
     "start": "node bin/server.js",
@@ -28,6 +28,10 @@
     "#tests/*": "./tests/*.js",
     "#config/*": "./config/*.js"
   },
+  "dependencies": {
+    "@adonisjs/core": "^6.18.0",
+    "reflect-metadata": "^0.2.2"
+  },
   "devDependencies": {
     "@adonisjs/assembler": "^7.8.2",
     "@adonisjs/eslint-config": "^2.1.0",
@@ -44,10 +48,6 @@
     "prettier": "^3.5.3",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
-  },
-  "dependencies": {
-    "@adonisjs/core": "^6.18.0",
-    "reflect-metadata": "^0.2.2"
   },
   "hotHook": {
     "boundaries": [

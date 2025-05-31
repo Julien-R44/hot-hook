@@ -1,10 +1,13 @@
 {
   "name": "@hot-hook/fastify-example",
-  "private": true,
   "type": "module",
+  "private": true,
   "scripts": {
     "dev:tsnode": "hot-runner --node-args=--import=./tsnode.esm.js --node-args=--import=hot-hook/register src/index.ts",
     "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register src/index.ts"
+  },
+  "dependencies": {
+    "fastify": "^5.3.3"
   },
   "devDependencies": {
     "@hot-hook/dump-viewer": "workspace:*",
@@ -13,9 +16,6 @@
     "hot-hook": "workspace:*",
     "pino-pretty": "^13.0.0",
     "tsx": "^4.19.4"
-  },
-  "dependencies": {
-    "fastify": "^5.3.3"
   },
   "hotHook": {
     "boundaries": [

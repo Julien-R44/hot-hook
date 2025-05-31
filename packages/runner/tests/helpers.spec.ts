@@ -1,5 +1,6 @@
 import { pEvent } from 'p-event'
 import { test } from '@japa/runner'
+
 import { runNode } from '../src/helpers.js'
 
 test.group('Child process', () => {
@@ -8,7 +9,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       process.send('ready')
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {
@@ -29,7 +30,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       process.send({ args: process.argv.splice(2) })
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {
@@ -49,7 +50,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       process.send({ args: process.execArgv })
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {
@@ -72,7 +73,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       setTimeout(() => {}, 1000)
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {
@@ -89,7 +90,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       throw new Error('Something went wrong')
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {
@@ -109,7 +110,7 @@ test.group('Child process', () => {
       'foo.ts',
       `
       throw new Error('Something went wrong')
-    `
+    `,
     )
 
     const childProcess = runNode(fs.basePath, {

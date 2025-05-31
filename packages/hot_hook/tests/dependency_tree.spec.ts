@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+
 import DependencyTree from '../src/dependency_tree.js'
 
 test.group('Dependency tree', () => {

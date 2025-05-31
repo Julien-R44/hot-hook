@@ -1,4 +1,5 @@
-import { FC } from 'hono/jsx'
+import type { FC } from 'hono/jsx'
+
 import { Button } from '../components/button.js'
 
 /**
@@ -6,7 +7,7 @@ import { Button } from '../components/button.js'
  * You will always get the latest version of the code without
  * restarting the whole server.
  */
-export const Home: FC = (props) => {
+export const Home: FC = () => {
   return (
     <html>
       <body>

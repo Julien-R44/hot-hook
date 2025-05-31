@@ -1,4 +1,4 @@
-import { MessagePort } from 'node:worker_threads'
+import type { MessagePort } from 'node:worker_threads'
 
 export type MessageChannelMessage =
   | { type: 'hot-hook:full-reload'; path: string; shouldBeReloadable?: boolean }
@@ -6,7 +6,7 @@ export type MessageChannelMessage =
 
 export interface InitOptions {
   /**
-   * onFullReloadAsked is called when a full server reload is requested
+   * OnFullReloadAsked is called when a full server reload is requested
    * by the hook. You should use this to kill the current process and
    * restart it.
    */

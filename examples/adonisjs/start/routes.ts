@@ -7,7 +7,8 @@
 |
 */
 
-const PostsController = () => import('#controllers/posts_controller')
 import router from '@adonisjs/core/services/router'
+
+const PostsController = () => import('#controllers/posts_controller')
 
 router.get('/', [PostsController])

@@ -3,8 +3,9 @@ import { join } from 'desm'
 import path from 'node:path'
 import pTimeout from 'p-timeout'
 import { pEvent } from 'p-event'
+import { execaNode } from 'execa'
+import type { NodeOptions } from 'execa'
 import { getActiveTest } from '@japa/runner'
-import { NodeOptions, execaNode } from 'execa'
 
 export const projectRoot = join(import.meta.url, '../')
 

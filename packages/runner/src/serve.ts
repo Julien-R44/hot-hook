@@ -1,8 +1,8 @@
 import { relative } from 'node:path'
-import { runNode } from './helpers.js'
-
-import { BaseCommand, args, flags } from '@adonisjs/ace'
 import { type ExecaChildProcess } from 'execa'
+import { BaseCommand, args, flags } from '@adonisjs/ace'
+
+import { runNode } from './helpers.js'
 
 export class Serve extends BaseCommand {
   static commandName = 'serve'

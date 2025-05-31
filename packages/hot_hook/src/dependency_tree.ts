@@ -53,7 +53,7 @@ export default class DependencyTree {
       version: 0,
       parents: null,
       reloadable: false,
-      path: path,
+      path,
       dependents: new Set(),
       dependencies: new Set(),
     }
@@ -78,7 +78,7 @@ export default class DependencyTree {
     parentPath: string,
     dependency: { path: string; reloadable?: boolean; isWronglyImported?: boolean }
   ): void {
-    let parentNode = this.#pathMap.get(parentPath)
+    const parentNode = this.#pathMap.get(parentPath)
     if (!parentNode) return
 
     let childNode = this.#pathMap.get(dependency.path)
@@ -107,10 +107,10 @@ export default class DependencyTree {
    * Add a dependent to a file
    */
   addDependent(dependentPath: string, parentPath: string): void {
-    let dependentNode = this.#pathMap.get(dependentPath)
+    const dependentNode = this.#pathMap.get(dependentPath)
     if (!dependentNode) return
 
-    let parentNode = this.#pathMap.get(parentPath)
+    const parentNode = this.#pathMap.get(parentPath)
     if (!parentNode) return
 
     dependentNode.dependents.add(parentNode)

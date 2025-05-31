@@ -1,4 +1,5 @@
 import { HelpCommand, Kernel } from '@adonisjs/ace'
+
 import { Serve } from './src/serve.js'
 
 Kernel.defaultCommand = Serve

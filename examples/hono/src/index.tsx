@@ -9,7 +9,7 @@ import { setTimeout } from 'node:timers/promises'
  * setup other services etc..
  */
 console.log('Initializing the application..')
-await setTimeout(2_000)
+await setTimeout(2000)
 console.log('Ready to serve requests')
 
 /**

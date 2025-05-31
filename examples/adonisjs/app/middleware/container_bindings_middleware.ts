@@ -1,6 +1,6 @@
 import { Logger } from '@adonisjs/core/logger'
 import { HttpContext } from '@adonisjs/core/http'
-import { NextFn } from '@adonisjs/core/types/http'
+import type { NextFn } from '@adonisjs/core/types/http'
 
 /**
  * The container bindings middleware binds classes to their request

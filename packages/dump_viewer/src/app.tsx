@@ -1,6 +1,7 @@
 import { DataSet } from 'vis-data'
+import { Network } from 'vis-network'
 import { useEffect } from 'preact/hooks'
-import { Edge, Network, Node } from 'vis-network'
+import type { Edge, Node } from 'vis-network'
 
 export function App() {
   async function initGraph() {
@@ -8,8 +9,8 @@ export function App() {
       ? // eslint-disable-next-line unicorn/no-await-expression-member
         (await import('./fixtures/dump.json')).default
       : window.__HOT_HOOK_DUMP__
-    let nodes: Node[] = []
-    let edges: Edge[] = []
+    const nodes: Node[] = []
+    const edges: Edge[] = []
 
     const paths = new Map()
 
@@ -38,14 +39,14 @@ export function App() {
 
       nodes.push({
         shape: 'box',
-        id: id,
+        id,
         label: `${item.path} | Version ${item.version}`,
         margin: { top: 13, bottom: 13, left: 13, right: 13 },
         borderWidth: 3,
         shadow: true,
         font: { color: 'black' },
         shapeProperties: { borderRadius: 10 },
-        color: color,
+        color,
       })
 
       item.dependencies.forEach((dep) => {

@@ -1,6 +1,7 @@
-import { test } from '@japa/runner'
-import { DynamicImportChecker } from '../src/dynamic_import_checker.js'
 import { join } from 'node:path'
+import { test } from '@japa/runner'
+
+import { DynamicImportChecker } from '../src/dynamic_import_checker.js'
 
 test.group('Dynamic Import Checker', () => {
   test('Throw if given specifier is not dynamically importedf', async ({ assert, fs }) => {

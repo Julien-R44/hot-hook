@@ -1,14 +1,14 @@
-import chokidar, { type FSWatcher } from 'chokidar'
 import { fileURLToPath } from 'node:url'
+import chokidar, { type FSWatcher } from 'chokidar'
 import { access, realpath } from 'node:fs/promises'
-import { MessagePort } from 'node:worker_threads'
+import type { MessagePort } from 'node:worker_threads'
 import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 
 import debug from './debug.js'
 import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
-import { InitializeHookOptions } from './types.js'
+import type { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
 import { FileNotImportedDynamicallyException } from './errors/file_not_imported_dynamically_exception.js'
 
@@ -111,7 +111,7 @@ export class HotHookLoader {
       return this.#messagePort?.postMessage({
         type: 'hot-hook:full-reload',
         path: realFilePath,
-        shouldBeReloadable: shouldBeReloadable,
+        shouldBeReloadable,
       })
     }
 
@@ -141,7 +141,7 @@ export class HotHookLoader {
    * scoped to each module.
    */
   #getImportMetaHotSource() {
-    let hotFns = `
+    const hotFns = `
     import.meta.hot = {};
     import.meta.hot.dispose = async (callback) => {
       const { hot } = await import('hot-hook');
@@ -214,47 +214,46 @@ export class HotHookLoader {
       this.#dependencyTree.addRoot(resultPath)
       this.#initialize(resultPath)
       return result
-    } else {
+    }
+    /**
+     * Sometimes we receive a parentUrl that is just `data:`. I didn't really understand
+     * why yet, for now we just ignore these cases.
+     *
+     * See https://github.com/tailwindlabs/tailwindcss/discussions/15105
+     */
+    if (parentUrl.protocol !== 'file:') return result
+
+    const parentPath = fileURLToPath(parentUrl)
+    const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
+    const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
+
+    if (reloadable) {
       /**
-       * Sometimes we receive a parentUrl that is just `data:`. I didn't really understand
-       * why yet, for now we just ignore these cases.
-       *
-       * See https://github.com/tailwindlabs/tailwindcss/discussions/15105
+       * If supposed to be reloadable, we must ensure it is imported dynamically
+       * from the parent file. Otherwise, hot-hook can't invalidate the file
        */
-      if (parentUrl.protocol !== 'file:') return result
+      const isImportedDynamically =
+        await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
+          parentPath,
+          specifier
+        )
 
-      const parentPath = fileURLToPath(parentUrl)
-      const isHardcodedBoundary = this.#hardcodedBoundaryMatcher.match(resultPath)
-      const reloadable = context.importAttributes?.hot === 'true' ? true : isHardcodedBoundary
+      /**
+       * Throw an error if not dynamically imported and the option is set
+       */
+      if (!isImportedDynamically && this.#options.throwWhenBoundariesAreNotDynamicallyImported)
+        throw new FileNotImportedDynamicallyException(parentPath, specifier, this.#projectRoot)
 
-      if (reloadable) {
-        /**
-         * If supposed to be reloadable, we must ensure it is imported dynamically
-         * from the parent file. Otherwise, hot-hook can't invalidate the file
-         */
-        let isImportedDynamically =
-          await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
-            parentPath,
-            specifier
-          )
-
-        /**
-         * Throw an error if not dynamically imported and the option is set
-         */
-        if (!isImportedDynamically && this.#options.throwWhenBoundariesAreNotDynamicallyImported)
-          throw new FileNotImportedDynamicallyException(parentPath, specifier, this.#projectRoot)
-
-        /**
-         * Otherwise, just add the file as not-reloadable ( so it will trigger a full reload )
-         */
-        this.#dependencyTree.addDependency(parentPath, {
-          path: resultPath,
-          reloadable: isImportedDynamically,
-          isWronglyImported: !isImportedDynamically,
-        })
-      } else {
-        this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
-      }
+      /**
+       * Otherwise, just add the file as not-reloadable ( so it will trigger a full reload )
+       */
+      this.#dependencyTree.addDependency(parentPath, {
+        path: resultPath,
+        reloadable: isImportedDynamically,
+        isWronglyImported: !isImportedDynamically,
+      })
+    } else {
+      this.#dependencyTree.addDependency(parentPath, { path: resultPath, reloadable })
     }
 
     if (this.#pathIgnoredMatcher.match(resultPath)) {

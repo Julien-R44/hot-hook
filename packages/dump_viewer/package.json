@@ -1,39 +1,7 @@
 {
   "name": "@hot-hook/dump-viewer",
-  "version": "0.4.0",
   "type": "module",
-  "files": [
-    "build"
-  ],
-  "exports": {
-    ".": "./build/dump_viewer.js"
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build && tsc -p tsconfig.node.json",
-    "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm lint && pnpm build",
-    "lint": "eslint ."
-  },
-  "devDependencies": {
-    "@preact/preset-vite": "^2.10.1",
-    "hot-hook": "workspace:*",
-    "typescript": "^5.8.3",
-    "unocss": "^66.1.3",
-    "vite": "^6.3.5",
-    "vite-plugin-singlefile": "^2.2.0"
-  },
-  "dependencies": {
-    "@unocss/reset": "^66.1.3",
-    "desm": "^1.3.1",
-    "preact": "^10.26.8",
-    "vis-data": "^7.1.9",
-    "vis-network": "^9.1.10"
-  },
-  "peerDependencies": {
-    "hot-hook": "workspace:*"
-  },
+  "version": "0.4.0",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
   "keywords": [
@@ -43,6 +11,38 @@
     "esm",
     "node"
   ],
+  "exports": {
+    ".": "./build/dump_viewer.js"
+  },
+  "files": [
+    "build"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build && tsc -p tsconfig.node.json",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "pnpm lint && pnpm build",
+    "lint": "eslint ."
+  },
+  "peerDependencies": {
+    "hot-hook": "workspace:*"
+  },
+  "dependencies": {
+    "@unocss/reset": "^66.1.3",
+    "desm": "^1.3.1",
+    "preact": "^10.26.8",
+    "vis-data": "^7.1.9",
+    "vis-network": "^9.1.10"
+  },
+  "devDependencies": {
+    "@preact/preset-vite": "^2.10.1",
+    "hot-hook": "workspace:*",
+    "typescript": "^5.8.3",
+    "unocss": "^66.1.3",
+    "vite": "^6.3.5",
+    "vite-plugin-singlefile": "^2.2.0"
+  },
   "eslintConfig": {
     "extends": "@adonisjs/eslint-config/package"
   },

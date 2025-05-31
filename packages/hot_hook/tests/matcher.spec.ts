@@ -1,4 +1,5 @@
 import { test } from '@japa/runner'
+
 import { Matcher } from '../src/matcher.js'
 
 test.group('Matcher', () => {

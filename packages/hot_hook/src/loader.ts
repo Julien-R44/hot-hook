@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url'
-import chokidar, { type FSWatcher } from 'chokidar'
 import { access, realpath } from 'node:fs/promises'
+import chokidar, { type FSWatcher } from 'chokidar'
 import type { MessagePort } from 'node:worker_threads'
 import { resolve as pathResolve, dirname } from 'node:path'
 import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
@@ -8,9 +8,14 @@ import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 import debug from './debug.js'
 import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
-import type { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
 import { FileNotImportedDynamicallyException } from './errors/file_not_imported_dynamically_exception.js'
+import type {
+  FileChangeAction,
+  InitializeHookOptions,
+  MessageChannelMessage,
+  MessageChannelPerType,
+} from './types.js'
 
 export class HotHookLoader {
   #options: InitializeHookOptions
@@ -19,6 +24,7 @@ export class HotHookLoader {
   #messagePort?: MessagePort
   #watcher!: FSWatcher
   #pathIgnoredMatcher!: Matcher
+  #pathIncludedMatcher!: Matcher
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher
   #dynamicImportChecker!: DynamicImportChecker
@@ -39,11 +45,13 @@ export class HotHookLoader {
    * Initialize the class with the provided root path.
    */
   #initialize(root: string) {
-    this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
     this.#projectRoot = this.#projectRoot ?? dirname(root)
     this.#reloadMatcher = new Matcher(this.#projectRoot, this.#options.restart || [])
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
+    this.#pathIncludedMatcher = new Matcher(this.#projectRoot, this.#options.include || [])
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
+
+    this.#watcher = this.#createWatcher()
   }
 
   /**
@@ -58,33 +66,46 @@ export class HotHookLoader {
     }
   }
 
+  #postMessage<T extends MessageChannelMessage['type']>(type: T, data: MessageChannelPerType[T]) {
+    this.#messagePort?.postMessage({ type, ...data })
+  }
+
   /**
    * When a message is received from the main thread
    */
   #onMessage(message: any) {
     if (message.type !== 'hot-hook:dump') return
-
-    const dump = this.#dependencyTree.dump()
-    this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump })
+    this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump: this.#dependencyTree.dump() })
   }
 
   /**
    * When a file changes, invalidate it and its dependents.
    */
-  async #onFileChange(relativeFilePath: string) {
-    debug('File change %s', relativeFilePath)
-
+  async #onFileChange(relativeFilePath: string, action: FileChangeAction) {
+    debug('File change %s', { relativeFilePath, action })
     const filePath = pathResolve(relativeFilePath)
-    const realFilePath = await realpath(filePath)
 
     /**
-     * First check if file still exists. If not, we must remove it from the
-     * dependency tree
+     * If the file is removed, we must remove it from the dependency tree
+     * and stop watching it.
      */
-    const isFileExist = await this.#checkIfFileExists(realFilePath)
-    if (!isFileExist) {
-      debug('File does not exist anymore %s', realFilePath)
-      return this.#dependencyTree.remove(realFilePath)
+    if (action === 'unlink') {
+      debug('File removed %s', filePath)
+      this.#watcher.unwatch(filePath)
+      this.#postMessage('hot-hook:file-changed', { path: filePath, action: 'unlink' })
+
+      return this.#dependencyTree.remove(filePath)
+    }
+
+    /**
+     * Defensive check to ensure the file still exists.
+     * If it doesn't, we just return and do nothing.
+     */
+    const fileExists = await this.#checkIfFileExists(filePath)
+    if (!fileExists) {
+      debug('File does not exist anymore %s', filePath)
+      this.#watcher.unwatch(filePath)
+      return this.#dependencyTree.remove(filePath)
     }
 
     /**
@@ -96,9 +117,19 @@ export class HotHookLoader {
     /**
      * If the file is an hardcoded reload file, we trigger a full reload.
      */
+    const realFilePath = await realpath(filePath)
     if (this.#reloadMatcher.match(realFilePath)) {
       debug('Full reload (hardcoded `restart` file) %s', realFilePath)
-      return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
+      return this.#postMessage('hot-hook:full-reload', { path: realFilePath })
+    }
+
+    /**
+     * Check if the file exist in the dependency tree. If not, means it was still
+     * not loaded, so we just send a "file-changed" message
+     */
+    if (!this.#dependencyTree.isInside(realFilePath)) {
+      debug('File not in dependency tree, sending file-changed message %s', realFilePath)
+      return this.#postMessage('hot-hook:file-changed', { path: realFilePath, action })
     }
 
     /**
@@ -108,11 +139,7 @@ export class HotHookLoader {
     const { reloadable, shouldBeReloadable } = this.#dependencyTree.isReloadable(realFilePath)
     if (!reloadable) {
       debug('Full reload (not-reloadable file) %s', realFilePath)
-      return this.#messagePort?.postMessage({
-        type: 'hot-hook:full-reload',
-        path: realFilePath,
-        shouldBeReloadable,
-      })
+      return this.#postMessage('hot-hook:full-reload', { path: realFilePath, shouldBeReloadable })
     }
 
     /**
@@ -120,17 +147,32 @@ export class HotHookLoader {
      */
     const invalidatedFiles = this.#dependencyTree.invalidateFileAndDependents(realFilePath)
     debug('Invalidating %s', Array.from(invalidatedFiles).join(', '))
-    this.#messagePort?.postMessage({ type: 'hot-hook:invalidated', paths: [...invalidatedFiles] })
+    this.#postMessage('hot-hook:invalidated', { paths: [...invalidatedFiles] })
   }
 
   /**
    * Create the chokidar watcher instance.
    */
   #createWatcher() {
-    const watcher = chokidar.watch([])
+    const watcher = chokidar.watch('.', {
+      ignoreInitial: true,
+      cwd: this.#projectRoot,
+      ignored: (file, stats) => {
+        if (file === this.#projectRoot) return false
+        if (!stats) return false
 
-    watcher.on('change', this.#onFileChange.bind(this))
-    watcher.on('unlink', this.#onFileChange.bind(this))
+        if (this.#pathIgnoredMatcher.match(file)) return true
+        if (this.#reloadMatcher.match(file)) return false
+
+        if (stats.isDirectory()) return false
+
+        return !this.#pathIncludedMatcher.match(file)
+      },
+    })
+
+    watcher.on('change', (path) => this.#onFileChange(path, 'change'))
+    watcher.on('unlink', (path) => this.#onFileChange(path, 'unlink'))
+    watcher.on('add', (path) => this.#onFileChange(path, 'add'))
 
     return watcher
   }
@@ -215,6 +257,7 @@ export class HotHookLoader {
       this.#initialize(resultPath)
       return result
     }
+
     /**
      * Sometimes we receive a parentUrl that is just `data:`. I didn't really understand
      * why yet, for now we just ignore these cases.

@@ -9,7 +9,7 @@
   "keywords": [],
   "scripts": {
     "typecheck": "pnpm run -r --parallel typecheck",
-    "lint": "eslint . --ext=.ts",
+    "lint": "eslint .",
     "test": "pnpm run -r --parallel test",
     "build": "pnpm run -r build",
     "release": "pnpm run build && changeset publish"

@@ -76,7 +76,7 @@ export default class DependencyTree {
    */
   addDependency(
     parentPath: string,
-    dependency: { path: string; reloadable?: boolean; isWronglyImported?: boolean }
+    dependency: { path: string; reloadable?: boolean; isWronglyImported?: boolean },
   ): void {
     const parentNode = this.#pathMap.get(parentPath)
     if (!parentNode) return
@@ -175,7 +175,7 @@ export default class DependencyTree {
 
     const checkPathToRoot = (
       currentNode: FileNode,
-      visited: Set<string> = new Set()
+      visited: Set<string> = new Set(),
     ): { reloadable: boolean; shouldBeReloadable: boolean } => {
       if (currentNode.isWronglyImported) {
         return { reloadable: false, shouldBeReloadable: true }

@@ -21,7 +21,7 @@ test.group('Register', () => {
          await app.default(request, response)
        })
 
-       server.listen(3333, () => console.log('Server is running'))`
+       server.listen(3333, () => console.log('Server is running'))`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -59,7 +59,7 @@ test.group('Register', () => {
          await app.default(request, response)
        })
 
-       server.listen(3333, () => console.log('Server is running'))`
+       server.listen(3333, () => console.log('Server is running'))`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -80,7 +80,7 @@ test.group('Register', () => {
       server.child,
       'message',
       (message: any) =>
-        message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js')
+        message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js'),
     )
     assert.isDefined(result)
   })
@@ -105,7 +105,7 @@ test.group('Register', () => {
        })
 
        server.listen(3333, () => console.log('Server is running'))
-      `
+      `,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -147,7 +147,7 @@ test.group('Register', () => {
        })
 
        server.listen(3333, () => console.log('Server is running'))
-      `
+      `,
     )
 
     await createHandlerFile({ path: 'src/app.js', response: 'Hello World!' })
@@ -194,7 +194,7 @@ test.group('Register', () => {
        })
 
        server.listen(3333, () => console.log('Server is running'))
-      `
+      `,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -212,7 +212,7 @@ test.group('Register', () => {
       server.child,
       'message',
       (message: any) =>
-        message?.type === 'hot-hook:full-reload' && message.path.includes('.restart-file')
+        message?.type === 'hot-hook:full-reload' && message.path.includes('.restart-file'),
     )
   })
 
@@ -236,7 +236,7 @@ test.group('Register', () => {
        })
 
        server.listen(3333, () => console.log('Server is running'))
-      `
+      `,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -253,7 +253,7 @@ test.group('Register', () => {
     await pEvent(
       server.child,
       'message',
-      (message: any) => message?.type === 'hot-hook:full-reload' && message.path.includes('.env')
+      (message: any) => message?.type === 'hot-hook:full-reload' && message.path.includes('.env'),
     )
   })
 })

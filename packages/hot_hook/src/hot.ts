@@ -61,7 +61,7 @@ class Hot {
         ],
         restart: ['.env'],
       },
-      options
+      options,
     )
 
     debug('Hot hook options %o', this.#options)
@@ -116,7 +116,7 @@ class Hot {
   async dump() {
     this.#messageChannel.port1.postMessage({ type: 'hot-hook:dump' })
     const result: any = await new Promise((resolve) =>
-      this.#messageChannel.port1.once('message', (message) => resolve(message))
+      this.#messageChannel.port1.once('message', (message) => resolve(message)),
     )
 
     return result.dump

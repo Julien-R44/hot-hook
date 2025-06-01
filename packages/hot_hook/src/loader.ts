@@ -235,7 +235,7 @@ export class HotHookLoader {
       const isImportedDynamically =
         await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
           parentPath,
-          specifier
+          specifier,
         )
 
       /**

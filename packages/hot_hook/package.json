@@ -48,10 +48,6 @@
   "devDependencies": {
     "@types/picomatch": "^4.0.0"
   },
-  "eslintConfig": {
-    "extends": "@adonisjs/eslint-config/package"
-  },
-  "prettier": "@adonisjs/prettier-config",
   "publishConfig": {
     "access": "public",
     "tag": "latest"

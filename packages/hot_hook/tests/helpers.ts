@@ -11,7 +11,7 @@ export const projectRoot = join(import.meta.url, '../')
 
 export async function fakeInstall(destination: string) {
   const { name: packageName, bin = {} } = await fs.readJson(
-    path.resolve(projectRoot, 'package.json')
+    path.resolve(projectRoot, 'package.json'),
   )
 
   await fs.ensureSymlink(projectRoot, path.resolve(destination, 'node_modules', packageName))
@@ -21,13 +21,13 @@ export async function fakeInstall(destination: string) {
     const binName = packageName
     await fs.ensureSymlink(
       path.resolve(projectRoot, binPath),
-      path.resolve(destination, 'node_modules', '.bin', binName)
+      path.resolve(destination, 'node_modules', '.bin', binName),
     )
   } else {
     for (const [binName, binPath] of Object.entries(bin)) {
       await fs.ensureSymlink(
         path.resolve(projectRoot, binPath as any),
-        path.resolve(destination, 'node_modules', '.bin', binName)
+        path.resolve(destination, 'node_modules', '.bin', binName),
       )
     }
   }
@@ -43,7 +43,7 @@ export async function createHandlerFile(options: { path: string; response: strin
     `export default function(request, response) {
       response.writeHead(200, {'Content-Type': 'text/plain'})
       response.end('${response}')
-    }`
+    }`,
   )
 }
 

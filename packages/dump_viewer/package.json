@@ -43,10 +43,6 @@
     "vite": "^6.3.5",
     "vite-plugin-singlefile": "^2.2.0"
   },
-  "eslintConfig": {
-    "extends": "@adonisjs/eslint-config/package"
-  },
-  "prettier": "@adonisjs/prettier-config",
   "publishConfig": {
     "access": "public",
     "tag": "latest"

@@ -17,7 +17,7 @@ export function App() {
     data.forEach((item, index) => paths.set(item.path, index + 1))
     data.forEach((item, index) => {
       const hasOnlyNodeModulesDependency = item.dependencies.every((dep) =>
-        dep.includes('node_modules')
+        dep.includes('node_modules'),
       )
 
       const isRoot = item.dependents.length === 0

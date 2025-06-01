@@ -15,8 +15,6 @@
     "release": "pnpm run build && changeset publish"
   },
   "devDependencies": {
-    "@adonisjs/eslint-config": "^2.1.0",
-    "@adonisjs/prettier-config": "^1.4.5",
     "@adonisjs/tsconfig": "^1.4.1",
     "@changesets/cli": "^2.29.4",
     "@japa/assert": "3.0.0",

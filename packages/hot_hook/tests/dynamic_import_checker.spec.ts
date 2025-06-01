@@ -13,7 +13,7 @@ test.group('Dynamic Import Checker', () => {
 
       import '#app/aliases'
       await import('#app/aliases-bla')
-      `
+      `,
     )
 
     const checker = new DynamicImportChecker()

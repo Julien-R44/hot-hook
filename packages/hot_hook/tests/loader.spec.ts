@@ -28,7 +28,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -68,7 +68,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -87,7 +87,7 @@ test.group('Loader', () => {
       server.child,
       'message',
       (message: any) =>
-        message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js')
+        message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js'),
     )
     assert.isDefined(result)
   })
@@ -114,7 +114,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'node_modules/app/app.js', response: 'Hello World!' })
@@ -142,7 +142,7 @@ test.group('Loader', () => {
        if (import.meta.hot) {
         process.send({ type: 'ok' })
        }
-    `
+    `,
     )
     await fs.create(
       'server.js',
@@ -164,7 +164,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     const server = runProcess('server.js', {
@@ -201,7 +201,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     const server = runProcess('server.js', {
@@ -221,7 +221,7 @@ test.group('Loader', () => {
       'message',
       (message: any) =>
         message?.type === 'hot-hook:invalidated' &&
-        message.paths.includes(join(fs.basePath, 'config/test.js'))
+        message.paths.includes(join(fs.basePath, 'config/test.js')),
     )
 
     assert.isDefined(result)
@@ -249,7 +249,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -293,7 +293,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     const server = runProcess('server.js', {
@@ -311,7 +311,7 @@ test.group('Loader', () => {
     const result = await pEvent(
       server.child,
       'message',
-      (message: any) => message?.type === 'hot-hook:full-reload'
+      (message: any) => message?.type === 'hot-hook:full-reload',
     )
     assert.isDefined(result)
   }).disableTimeout()
@@ -336,7 +336,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
@@ -357,7 +357,7 @@ test.group('Loader', () => {
       server.child,
       'message',
       (message: any) =>
-        message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true
+        message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true,
     )
     assert.isDefined(result)
   }).disableTimeout()
@@ -382,7 +382,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await fs.create(
@@ -393,7 +393,7 @@ test.group('Loader', () => {
       export default function(request, response) {
         response.writeHead(200, {'Content-Type': 'text/plain'})
         response.end('Hello World!')
-      }`
+      }`,
     )
     await fs.create(`app2.js`, `export function test() { return 'Hello World!' }`)
 
@@ -440,7 +440,7 @@ test.group('Loader', () => {
 
        server.listen(3333, () => {
          console.log('Server is running')
-       })`
+       })`,
     )
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World!' })

@@ -161,14 +161,10 @@ export class HotHookLoader {
         if (file === this.#projectRoot) return false
         if (!stats) return false
 
-        if (this.#pathIgnoredMatcher.match(file)) {
-          console.log('PM File %s is ignored', file)
-          return true
-        }
+        if (this.#pathIgnoredMatcher.match(file)) return true
         if (this.#reloadMatcher.match(file)) return false
 
         if (stats.isDirectory()) return false
-        console.log('File %s is ignored', file, !this.#pathIncludedMatcher.match(file))
 
         return !this.#pathIncludedMatcher.match(file)
       },
@@ -241,7 +237,6 @@ export class HotHookLoader {
    * - And adding files to the watcher
    */
   resolve: ResolveHook = async (specifier, context, nextResolve) => {
-    console.log('Resolving specifier:', specifier, 'with context:', context)
     const parentUrl = (context.parentURL && new URL(context.parentURL)) as URL
     if (parentUrl?.searchParams.has('hot-hook')) {
       parentUrl.searchParams.delete('hot-hook')

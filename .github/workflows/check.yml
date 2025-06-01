@@ -10,9 +10,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 24
 
       - name: Install pnpm
         run: |
@@ -32,9 +32,9 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Setup Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: 21
+          node-version: 24
 
       - name: Install pnpm
         run: |
@@ -53,7 +53,7 @@ jobs:
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-        node: [20, 21]
+        node: [22, 24]
     runs-on: ${{ matrix.os }}
     timeout-minutes: 10
 

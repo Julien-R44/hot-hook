@@ -56,7 +56,7 @@ test.group('Child process', () => {
     const childProcess = runNode(fs.basePath, {
       script: 'foo.ts',
       scriptArgs: ['--watch', '--foo=bar'],
-      nodeArgs: ['--throw-deprecation', '--import=../tsnode.esm.js'],
+      nodeArgs: ['--conditions=dev', '--import=tsx'],
     })
 
     const payload = await pEvent(childProcess, 'message', { rejectionEvents: ['error'] })
@@ -64,7 +64,7 @@ test.group('Child process', () => {
 
     assert.equal(childProcess.exitCode, 0)
     assert.deepEqual(payload, {
-      args: ['--enable-source-maps', '--throw-deprecation', '--import=../tsnode.esm.js'],
+      args: ['--enable-source-maps', '--conditions=dev', '--import=tsx'],
     })
   })
 

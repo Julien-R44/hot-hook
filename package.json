@@ -37,6 +37,7 @@
     "prettier": "^3.5.3",
     "supertest": "^7.1.1",
     "ts-node": "^10.9.2",
+    "tsdown": "^0.12.5",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },

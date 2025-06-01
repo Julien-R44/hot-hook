@@ -34,6 +34,7 @@ class Hot {
         this.#options.onFullReloadAsked?.()
         return
       }
+
       process.send?.({ type: 'hot-hook:invalidated', paths: message.paths })
 
       for (const url of message.paths) {
@@ -41,15 +42,28 @@ class Hot {
         callback?.()
       }
     }
+
+    if (message.type === 'hot-hook:file-changed') {
+      process.send?.(message)
+    }
   }
 
   /**
    * Register the hot reload hooks
    */
   async init(options: InitOptions) {
+    const envIgnore = process.env.HOT_HOOK_IGNORE?.split(',').map((p) => p.trim())
+    const envRestart = process.env.HOT_HOOK_RESTART?.split(',').map((p) => p.trim())
+    const envBoundaries = process.env.HOT_HOOK_BOUNDARIES?.split(',').map((p) => p.trim())
+    const envInclude = process.env.HOT_HOOK_INCLUDE?.split(',').map((p) => p.trim())
+
     this.#options = Object.assign(
       {
-        ignore: [
+        include: envInclude || ['**/*'],
+        boundaries: envBoundaries || [],
+        restart: envRestart || ['.env'],
+        throwWhenBoundariesAreNotDynamicallyImported: false,
+        ignore: envIgnore || [
           '**/node_modules/**',
           /**
            * Vite has a bug where it create multiple files with a
@@ -59,7 +73,6 @@ class Hot {
           '**/vite.config.js.timestamp*',
           '**/vite.config.ts.timestamp*',
         ],
-        restart: ['.env'],
       },
       options,
     )
@@ -79,6 +92,7 @@ class Hot {
       data: {
         root: this.#options.root,
         ignore: this.#options.ignore,
+        include: this.#options.include,
         restart: this.#options.restart,
         boundaries: this.#options.boundaries,
         messagePort: this.#messageChannel.port2,

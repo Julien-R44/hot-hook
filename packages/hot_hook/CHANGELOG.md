@@ -4,7 +4,8 @@
 
 ### Patch Changes
 
-- d66a6d6: ## Global watching and file-changed events
+- d66a6d6:
+  ## Global watching and file-changed events
 
   Add support for "global watching" and "file-changed" events
 

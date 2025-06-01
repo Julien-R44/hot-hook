@@ -1,0 +1,13 @@
+{
+  "mode": "pre",
+  "tag": "next",
+  "initialVersions": {
+    "adonisjs": "0.0.0",
+    "@hot-hook/dump-viewer": "0.4.0",
+    "hot-hook": "0.4.0",
+    "@hot-hook/runner": "0.1.0"
+  },
+  "changesets": [
+    "pretty-cycles-show"
+  ]
+}

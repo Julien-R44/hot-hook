@@ -103,6 +103,7 @@ class Hot {
     })
 
     this.#messageChannel.port1.on('message', this.#onMessage.bind(this))
+    this.#messageChannel.port1.unref()
   }
 
   /**

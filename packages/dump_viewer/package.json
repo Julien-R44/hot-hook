@@ -1,7 +1,7 @@
 {
   "name": "@hot-hook/dump-viewer",
   "type": "module",
-  "version": "0.4.1-next.0",
+  "version": "0.4.0",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
   "keywords": [

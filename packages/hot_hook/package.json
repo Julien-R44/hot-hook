@@ -1,7 +1,7 @@
 {
   "name": "hot-hook",
   "type": "module",
-  "version": "0.4.1-next.1",
+  "version": "0.4.0",
   "description": "Easy hot module reloading (HMR) for Node.js and ESM",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",

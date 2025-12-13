@@ -9,7 +9,7 @@
   "keywords": [],
   "scripts": {
     "typecheck": "pnpm run -r --parallel typecheck",
-    "lint": "eslint .",
+    "lint": "eslint . --ext=.ts",
     "test": "pnpm run -r --parallel test",
     "build": "pnpm run -r build",
     "release": "pnpm run build && changeset publish"
@@ -37,7 +37,6 @@
     "prettier": "^3.5.3",
     "supertest": "^7.1.1",
     "ts-node": "^10.9.2",
-    "tsdown": "^0.12.5",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
   },

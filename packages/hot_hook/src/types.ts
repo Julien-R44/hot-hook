@@ -1,16 +1,8 @@
 import type { MessagePort } from 'node:worker_threads'
 
-export type FileChangeAction = 'change' | 'add' | 'unlink'
 export type MessageChannelMessage =
   | { type: 'hot-hook:full-reload'; path: string; shouldBeReloadable?: boolean }
   | { type: 'hot-hook:invalidated'; paths: string[] }
-  | { type: 'hot-hook:file-changed'; path: string; action: FileChangeAction }
-
-export type MessageChannelPerType = {
-  [K in MessageChannelMessage['type']]: Omit<Extract<MessageChannelMessage, { type: K }>, 'type'>
-}
-
-type PathOrGlobPattern = string
 
 export interface InitOptions {
   /**
@@ -19,6 +11,12 @@ export interface InitOptions {
    * restart it.
    */
   onFullReloadAsked?: () => void
+
+  /**
+   * Paths that will not be watched by the hook.
+   * @default ['/node_modules/']
+   */
+  ignore?: string[]
 
   /**
    * Path to the root file of the application.
@@ -32,23 +30,10 @@ export interface InitOptions {
   rootDirectory?: string
 
   /**
-   * Paths/glob patterns that will be watched by the hook.
-   *
-   * @default ['**\/*']
-   */
-  include?: PathOrGlobPattern[]
-
-  /**
-   * Paths/glob patterns that will not be watched by the hook.
-   * @default ['/node_modules/']
-   */
-  ignore?: PathOrGlobPattern[]
-
-  /**
    * Files that will create an HMR boundary. This is equivalent of importing
    * the module with `import.meta.hot.boundary` in the module.
    */
-  boundaries?: PathOrGlobPattern[]
+  boundaries?: string[]
 
   /**
    * List of files that should trigger a full reload when change.
@@ -62,7 +47,7 @@ export interface InitOptions {
    *
    * @default ['.env']
    */
-  restart?: PathOrGlobPattern[]
+  restart?: string[]
 
   /**
    * If true, the hook will throw an error if a boundary is not dynamically
@@ -77,7 +62,6 @@ export type InitializeHookOptions = Pick<
   | 'root'
   | 'rootDirectory'
   | 'boundaries'
-  | 'include'
   | 'restart'
   | 'throwWhenBoundariesAreNotDynamicallyImported'
 > & {

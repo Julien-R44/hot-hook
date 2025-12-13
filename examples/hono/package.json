@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev:tsnode": "hot-runner --node-args=--import=./tsnode.esm.js --node-args=--import=hot-hook/register src/index.tsx",
-    "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register --no-clear-screen src/index.tsx"
+    "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register src/index.tsx"
   },
   "dependencies": {
     "@hono/node-server": "^1.14.3",

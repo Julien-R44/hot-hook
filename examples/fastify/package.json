@@ -7,14 +7,13 @@
     "dev:tsx": "hot-runner --node-args=--import=tsx --node-args=--import=hot-hook/register src/index.ts"
   },
   "dependencies": {
-    "fastify": "^5.3.3"
+    "fastify": "^5.6.2"
   },
   "devDependencies": {
     "@hot-hook/dump-viewer": "workspace:*",
     "@hot-hook/runner": "workspace:*",
-    "@types/node": "^22.15.29",
     "hot-hook": "workspace:*",
-    "pino-pretty": "^13.0.0"
+    "pino-pretty": "^13.1.3"
   },
   "hotHook": {
     "boundaries": [

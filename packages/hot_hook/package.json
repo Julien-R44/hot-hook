@@ -39,14 +39,14 @@
     "prepublishOnly": "pnpm lint && pnpm build"
   },
   "dependencies": {
-    "chokidar": "^4.0.3",
+    "chokidar": "^5.0.0",
     "fast-glob": "^3.3.3",
-    "parse-imports": "^2.2.1",
-    "picomatch": "^4.0.2",
-    "read-package-up": "^11.0.0"
+    "parse-imports": "^3.0.0",
+    "picomatch": "^4.0.3",
+    "read-package-up": "^12.0.0"
   },
   "devDependencies": {
-    "@types/picomatch": "^4.0.0"
+    "@types/picomatch": "^4.0.2"
   },
   "publishConfig": {
     "access": "public",

@@ -27,7 +27,7 @@
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
-    "@adonisjs/ace": "^13.3.0",
+    "@adonisjs/ace": "^13.4.0",
     "execa": "^8.0.1"
   },
   "publishConfig": {

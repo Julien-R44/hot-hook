@@ -15,9 +15,7 @@ jobs:
           node-version: 24
 
       - name: Install pnpm
-        run: |
-          corepack enable
-          corepack use pnpm@*
+        run: corepack enable
 
       - name: Install dependencies
         run: pnpm install
@@ -37,9 +35,7 @@ jobs:
           node-version: 24
 
       - name: Install pnpm
-        run: |
-          corepack enable
-          corepack use pnpm@*
+        run: corepack enable
 
       - name: Install dependencies
         run: |
@@ -66,9 +62,7 @@ jobs:
           node-version: ${{ matrix.node }}
 
       - name: Install pnpm
-        run: |
-          corepack enable
-          corepack use pnpm@*
+        run: corepack enable
 
       - name: Install dependencies
         run: |

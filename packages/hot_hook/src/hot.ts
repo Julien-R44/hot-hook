@@ -9,6 +9,7 @@ class Hot {
   #messageChannel!: MessageChannel
   #declinePaths = new Set<string>()
   #disposeCallbacks = new Map<string, () => void>()
+  #processMessageHandler?: (message: any) => void
 
   #hasOneDeclinedPath(paths: string[]) {
     return paths.some((path) => this.#declinePaths.has(path))
@@ -103,11 +104,16 @@ class Hot {
      * when an error occurs (instead of being kept alive by the IPC channel).
      */
     if (!this.#options.watch) {
-      process.on('message', (message: any) => {
+      if (this.#processMessageHandler) {
+        process.off('message', this.#processMessageHandler)
+      }
+
+      this.#processMessageHandler = (message: any) => {
         if (message?.type === 'hot-hook:file-changed') {
           this.#messageChannel.port1.postMessage(message)
         }
-      })
+      }
+      process.on('message', this.#processMessageHandler)
       process.channel?.unref()
     }
   }

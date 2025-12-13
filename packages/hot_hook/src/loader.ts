@@ -22,6 +22,7 @@ export class HotHookLoader {
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher
   #dynamicImportChecker!: DynamicImportChecker
+  #boundFileChangeHandler = this.#onFileChange.bind(this)
 
   constructor(options: InitializeHookOptions) {
     this.#options = options
@@ -45,8 +46,21 @@ export class HotHookLoader {
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
 
     if (this.#options.watch !== false) {
+      this.#cleanupWatcher()
       this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
     }
+  }
+
+  /**
+   * Clean up the existing watcher and its event listeners
+   */
+  #cleanupWatcher() {
+    if (!this.#watcher) return
+
+    this.#watcher.off('change', this.#boundFileChangeHandler)
+    this.#watcher.off('unlink', this.#boundFileChangeHandler)
+    this.#watcher.close()
+    this.#watcher = undefined
   }
 
   /**
@@ -146,8 +160,8 @@ export class HotHookLoader {
   #createWatcher() {
     const watcher = chokidar.watch([])
 
-    watcher.on('change', this.#onFileChange.bind(this))
-    watcher.on('unlink', this.#onFileChange.bind(this))
+    watcher.on('change', this.#boundFileChangeHandler)
+    watcher.on('unlink', this.#boundFileChangeHandler)
 
     return watcher
   }

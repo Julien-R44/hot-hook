@@ -16,5 +16,5 @@ await hot.init({
   rootDirectory: dirname(packageJsonPath),
   throwWhenBoundariesAreNotDynamicallyImported:
     hotHookConfig?.throwWhenBoundariesAreNotDynamicallyImported ?? false,
-  root: hotHookConfig?.root ? resolve(packageJsonPath, hotHookConfig.root) : undefined,
+  root: hotHookConfig?.root ? resolve(dirname(packageJsonPath), hotHookConfig.root) : undefined,
 })

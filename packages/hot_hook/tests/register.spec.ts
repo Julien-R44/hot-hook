@@ -162,12 +162,12 @@ test.group('Register', () => {
 
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'src/app.js', response: 'Hello World! Updated' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
 
-    await setTimeout(100)
     await createHandlerFile({ path: 'src/app.js', response: 'Hello World! Updated new' })
+    await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated new')
   })
 

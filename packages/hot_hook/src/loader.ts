@@ -17,7 +17,7 @@ export class HotHookLoader {
   #projectRoot!: string
   #reloadMatcher!: Matcher
   #messagePort?: MessagePort
-  #watcher!: FSWatcher
+  #watcher?: FSWatcher
   #pathIgnoredMatcher!: Matcher
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher
@@ -39,11 +39,14 @@ export class HotHookLoader {
    * Initialize the class with the provided root path.
    */
   #initialize(root: string) {
-    this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
     this.#projectRoot = this.#projectRoot ?? dirname(root)
     this.#reloadMatcher = new Matcher(this.#projectRoot, this.#options.restart || [])
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
+
+    if (this.#options.watch !== false) {
+      this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
+    }
   }
 
   /**
@@ -62,10 +65,15 @@ export class HotHookLoader {
    * When a message is received from the main thread
    */
   #onMessage(message: any) {
-    if (message.type !== 'hot-hook:dump') return
+    if (message.type === 'hot-hook:dump') {
+      const dump = this.#dependencyTree.dump()
+      this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump })
+      return
+    }
 
-    const dump = this.#dependencyTree.dump()
-    this.#messagePort?.postMessage({ type: 'hot-hook:dump', dump })
+    if (message.type === 'hot-hook:file-changed') {
+      this.#onFileChange(message.path)
+    }
   }
 
   /**
@@ -99,6 +107,15 @@ export class HotHookLoader {
     if (this.#reloadMatcher.match(realFilePath)) {
       debug('Full reload (hardcoded `restart` file) %s', realFilePath)
       return this.#messagePort?.postMessage({ type: 'hot-hook:full-reload', path: realFilePath })
+    }
+
+    /**
+     * If the file is not in the dependency tree, it means it hasn't been
+     * imported yet. We skip processing it.
+     */
+    if (!this.#dependencyTree.isInside(realFilePath)) {
+      debug('File not in dependency tree, skipping %s', realFilePath)
+      return
     }
 
     /**
@@ -260,7 +277,7 @@ export class HotHookLoader {
       return result
     }
 
-    this.#watcher.add(resultPath)
+    this.#watcher?.add(resultPath)
     const version = this.#dependencyTree.getVersion(resultPath).toString()
     resultUrl.searchParams.set('hot-hook', version)
 

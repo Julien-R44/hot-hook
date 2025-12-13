@@ -256,4 +256,49 @@ test.group('Register', () => {
       (message: any) => message?.type === 'hot-hook:full-reload' && message.path.includes('.env'),
     )
   })
+
+  test('watch: false should receive file-changed from parent process', async ({ fs }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', {
+      type: 'module',
+      hotHook: {
+        boundaries: ['./app.js'],
+        watch: false,
+      },
+    })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+
+       const server = http.createServer(async (request, response) => {
+         const app = await import('./app.js')
+         await app.default(request, response)
+       })
+
+       server.listen(3333, () => console.log('Server is running'))`,
+    )
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      env: { NODE_DEBUG: 'hot-hook' },
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    await server.waitForOutput('Server is running')
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
+
+    server.child.send({
+      type: 'hot-hook:file-changed',
+      path: join(fs.basePath, 'app.js'),
+      action: 'change',
+    })
+
+    await setTimeout(100)
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
+  })
 })

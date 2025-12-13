@@ -1,8 +1,11 @@
 import type { MessagePort } from 'node:worker_threads'
 
+export type FileChangeAction = 'change' | 'add' | 'unlink'
+
 export type MessageChannelMessage =
   | { type: 'hot-hook:full-reload'; path: string; shouldBeReloadable?: boolean }
   | { type: 'hot-hook:invalidated'; paths: string[] }
+  | { type: 'hot-hook:file-changed'; path: string; action: FileChangeAction }
 
 export interface InitOptions {
   /**
@@ -54,6 +57,18 @@ export interface InitOptions {
    * imported.
    */
   throwWhenBoundariesAreNotDynamicallyImported?: boolean
+
+  /**
+   * If false, hot-hook will not create its own file watcher. Instead, it
+   * will rely on an external watcher (like the one from the assembler)
+   * to send file change events via process.send().
+   *
+   * This is useful when the parent process needs to handle file watching
+   * to survive child process crashes.
+   *
+   * @default true
+   */
+  watch?: boolean
 }
 
 export type InitializeHookOptions = Pick<
@@ -64,6 +79,7 @@ export type InitializeHookOptions = Pick<
   | 'boundaries'
   | 'restart'
   | 'throwWhenBoundariesAreNotDynamicallyImported'
+  | 'watch'
 > & {
   /**
    * The message port to communicate with the parent thread.

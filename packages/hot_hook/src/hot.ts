@@ -47,8 +47,11 @@ class Hot {
    * Register the hot reload hooks
    */
   async init(options: InitOptions) {
+    const envWatch = process.env.HOT_HOOK_WATCH
+
     this.#options = Object.assign(
       {
+        watch: envWatch !== undefined ? envWatch !== 'false' : true,
         ignore: [
           '**/node_modules/**',
           /**
@@ -78,6 +81,7 @@ class Hot {
       transferList: [this.#messageChannel.port2],
       data: {
         root: this.#options.root,
+        watch: this.#options.watch,
         ignore: this.#options.ignore,
         restart: this.#options.restart,
         boundaries: this.#options.boundaries,
@@ -90,6 +94,22 @@ class Hot {
 
     this.#messageChannel.port1.on('message', this.#onMessage.bind(this))
     this.#messageChannel.port1.unref()
+
+    /**
+     * When watch is disabled, we listen for file-changed messages from
+     * the parent process and forward them to the loader.
+     *
+     * We unref the IPC channel so that the child process can exit naturally
+     * when an error occurs (instead of being kept alive by the IPC channel).
+     */
+    if (!this.#options.watch) {
+      process.on('message', (message: any) => {
+        if (message?.type === 'hot-hook:file-changed') {
+          this.#messageChannel.port1.postMessage(message)
+        }
+      })
+      process.channel?.unref()
+    }
   }
 
   /**

@@ -62,6 +62,13 @@ export default class DependencyTree {
   }
 
   /**
+   * Check if a file is in the dependency tree
+   */
+  isInside(path: string): boolean {
+    return this.#pathMap.has(path)
+  }
+
+  /**
    * Get the version of a file
    */
   getVersion(path: string): number {

@@ -97,7 +97,15 @@ export class HotHookLoader {
     debug('File change %s', relativeFilePath)
 
     const filePath = pathResolve(relativeFilePath)
-    const realFilePath = await realpath(filePath)
+    const realFilePath = await realpath(filePath).catch(() => null)
+
+    /**
+     * Realpath throws an error when the file does not exist.
+     */
+    if (!realFilePath) {
+      debug('Could not resolve realFilePath %s', filePath)
+      return this.#dependencyTree.remove(filePath)
+    }
 
     /**
      * First check if file still exists. If not, we must remove it from the

@@ -25,4 +25,19 @@ test.group('Dynamic Import Checker', () => {
     assert.isTrue(await checker.ensureFileIsImportedDynamicallyFromParent(path, './bla'))
     assert.isTrue(await checker.ensureFileIsImportedDynamicallyFromParent(path, '#app/aliases-bla'))
   })
+
+  test('Consider missing specifier as dynamically imported', async ({ assert, fs }) => {
+    await fs.create(
+      'app.ts',
+      `
+        import './foo'
+        await import('./bla')
+      `,
+    )
+
+    const checker = new DynamicImportChecker()
+    const path = join(fs.basePath, 'app.ts')
+
+    assert.isTrue(await checker.ensureFileIsImportedDynamicallyFromParent(path, './unknown'))
+  })
 })

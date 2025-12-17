@@ -22,12 +22,12 @@ export class DynamicImportChecker {
     const parentCode = await readFile(parentPath, 'utf-8')
     const imports = [...(await parseImports(parentCode))]
 
-    const dynamicImports = imports.find((importStatement) => {
+    const matchingImport = imports.find((importStatement) => {
       return importStatement.moduleSpecifier.value === specifier
     })
 
-    const isFileDynamicallyImportedFromParent = dynamicImports
-      ? dynamicImports.isDynamicImport
+    const isFileDynamicallyImportedFromParent = matchingImport
+      ? matchingImport.isDynamicImport
       : true
 
     const currentCache = this.cache.get(cacheKey) ?? new Map()

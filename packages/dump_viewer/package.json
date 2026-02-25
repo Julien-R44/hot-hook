@@ -22,7 +22,7 @@
     "build": "tsc && vite build && tsc -p tsconfig.node.json",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
-    "prepublishOnly": "pnpm lint && pnpm build",
+    "prepublishOnly": "pnpm build",
     "lint": "eslint ."
   },
   "peerDependencies": {

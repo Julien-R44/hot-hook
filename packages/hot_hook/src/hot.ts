@@ -1,8 +1,25 @@
-import { register } from 'node:module'
+import module from 'node:module'
 import { MessageChannel } from 'node:worker_threads'
+import type { LoadHookSync, ResolveHookSync } from 'node:module'
 
 import debug from './debug.js'
 import type { InitOptions, InitializeHookOptions, MessageChannelMessage } from './types.js'
+
+/**
+ * Whether this Node.js version can run hot-hook with `module.registerHooks()`.
+ *
+ * `registerHooks()` exists since 22.15, but until 22.22.3, 24.11.1 and 25.1.0,
+ * a synchronous `load` hook fails on CommonJS modules when hooks from
+ * `module.register()` are also registered, like ts-node's or older tsx's.
+ */
+function canUseSyncHooks() {
+  const [major, minor, patch] = process.versions.node.split('.').map(Number)
+  if (major >= 26) return true
+
+  const minimum = ({ 22: [22, 3], 24: [11, 1], 25: [1, 0] } as Record<number, number[]>)[major]
+  if (!minimum) return false
+  return minor > minimum[0] || (minor === minimum[0] && patch >= minimum[1])
+}
 
 class Hot {
   #options!: InitOptions
@@ -72,26 +89,50 @@ class Hot {
 
     /**
      * First, we setup a message channel to be able to communicate
-     * between the hook and the application process since hooks
-     * are running in a worker thread
+     * between the hook and the application process, since with the
+     * `module.register()` fallback hooks are running in a worker thread
      */
     this.#messageChannel = new MessageChannel()
 
-    register('hot-hook/loader', {
-      parentURL: import.meta.url,
-      transferList: [this.#messageChannel.port2],
-      data: {
-        root: this.#options.root,
-        watch: this.#options.watch,
-        ignore: this.#options.ignore,
-        restart: this.#options.restart,
-        boundaries: this.#options.boundaries,
-        messagePort: this.#messageChannel.port2,
-        rootDirectory: this.#options.rootDirectory,
-        throwWhenBoundariesAreNotDynamicallyImported:
-          this.#options.throwWhenBoundariesAreNotDynamicallyImported,
-      } satisfies InitializeHookOptions,
-    })
+    const data: InitializeHookOptions = {
+      root: this.#options.root,
+      watch: this.#options.watch,
+      ignore: this.#options.ignore,
+      restart: this.#options.restart,
+      boundaries: this.#options.boundaries,
+      messagePort: this.#messageChannel.port2,
+      rootDirectory: this.#options.rootDirectory,
+      throwWhenBoundariesAreNotDynamicallyImported:
+        this.#options.throwWhenBoundariesAreNotDynamicallyImported,
+    }
+
+    /**
+     * Prefer synchronous in-thread hooks since `module.register()` is
+     * deprecated (DEP0205). The loader then runs on this thread but keeps
+     * using the message channel, like the off-thread fallback.
+     */
+    if (canUseSyncHooks()) {
+      const { HotHookLoader } = await import('./loader.js')
+      const loader = new HotHookLoader(data)
+
+      /**
+       * Safe casts: hooks return synchronously when `nextResolve`/`nextLoad`
+       * do, which is always the case with `registerHooks()`
+       */
+      module.registerHooks({
+        resolve: loader.resolve as ResolveHookSync,
+        load: loader.load as LoadHookSync,
+      })
+
+      this.#messageChannel.port2.unref()
+      await loader.whenWatcherReady()
+    } else {
+      module.register('hot-hook/loader', {
+        parentURL: import.meta.url,
+        transferList: [this.#messageChannel.port2],
+        data,
+      })
+    }
 
     this.#messageChannel.port1.on('message', this.#onMessage.bind(this))
     this.#messageChannel.port1.unref()

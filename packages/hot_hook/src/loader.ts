@@ -1,13 +1,21 @@
+import chokidar from 'chokidar'
 import { fileURLToPath } from 'node:url'
-import chokidar, { type FSWatcher } from 'chokidar'
 import { access, realpath } from 'node:fs/promises'
 import type { MessagePort } from 'node:worker_threads'
 import { resolve as pathResolve, dirname } from 'node:path'
-import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
+import type {
+  LoadHook,
+  ResolveHook,
+  InitializeHook,
+  ResolveFnOutput,
+  ResolveHookContext,
+} from 'node:module'
 
 import debug from './debug.js'
 import { Matcher } from './matcher.js'
+import { then } from './maybe_async.js'
 import DependencyTree from './dependency_tree.js'
+import { WatcherThread } from './watcher_thread.js'
 import { shiftInlineSourceMap } from './source_map.js'
 import type { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
@@ -18,50 +26,60 @@ export class HotHookLoader {
   #projectRoot!: string
   #reloadMatcher!: Matcher
   #messagePort?: MessagePort
-  #watcher?: FSWatcher
+  #watcher?: { add(paths: string | string[]): unknown }
+  #offThread: boolean
   #pathIgnoredMatcher!: Matcher
   #dependencyTree: DependencyTree
   #hardcodedBoundaryMatcher!: Matcher
   #dynamicImportChecker!: DynamicImportChecker
   #boundFileChangeHandler = this.#onFileChange.bind(this)
+  #watcherReady: Promise<void> = Promise.resolve()
 
-  constructor(options: InitializeHookOptions) {
+  /**
+   * `offThread` is true when hooks run on the `module.register()` hooks thread
+   */
+  constructor(options: InitializeHookOptions, offThread = false) {
     this.#options = options
+    this.#offThread = offThread
     this.#messagePort = options.messagePort
     this.#projectRoot = options.rootDirectory!
 
-    if (options.root) this.#initialize(options.root)
-
     this.#dependencyTree = new DependencyTree({ root: options.root })
     this.#dynamicImportChecker = new DynamicImportChecker()
+
+    /**
+     * Start watching the `restart` files right away when the project root is
+     * known, so the initial scan can complete before the application runs.
+     */
+    if (options.root || options.rootDirectory) this.#initialize(options.root)
+
     this.#messagePort?.on('message', (message) => this.#onMessage(message))
   }
 
   /**
-   * Initialize the class with the provided root path.
+   * Resolves once the watcher has scanned the files it watches so far.
+   *
+   * Waiting for it avoids missing changes made right after the application
+   * starts.
    */
-  #initialize(root: string) {
-    this.#projectRoot = this.#projectRoot ?? dirname(root)
+  whenWatcherReady() {
+    return this.#watcherReady
+  }
+
+  /**
+   * Initialize the matchers and the watcher. Called again with the root path
+   * once it is resolved.
+   */
+  #initialize(root?: string) {
+    this.#projectRoot = this.#projectRoot ?? dirname(root!)
     this.#reloadMatcher = new Matcher(this.#projectRoot, this.#options.restart || [])
     this.#pathIgnoredMatcher = new Matcher(this.#projectRoot, this.#options.ignore)
     this.#hardcodedBoundaryMatcher = new Matcher(this.#projectRoot, this.#options.boundaries)
 
-    if (this.#options.watch !== false) {
-      this.#cleanupWatcher()
-      this.#watcher = this.#createWatcher().add([root, ...(this.#options.restart || [])])
-    }
-  }
+    if (this.#options.watch === false) return
 
-  /**
-   * Clean up the existing watcher and its event listeners
-   */
-  #cleanupWatcher() {
-    if (!this.#watcher) return
-
-    this.#watcher.off('change', this.#boundFileChangeHandler)
-    this.#watcher.off('unlink', this.#boundFileChangeHandler)
-    this.#watcher.close()
-    this.#watcher = undefined
+    this.#watcher ??= this.#createWatcher(this.#options.restart || [])
+    if (root) this.#watcher.add(root)
   }
 
   /**
@@ -164,10 +182,12 @@ export class HotHookLoader {
   }
 
   /**
-   * Create the chokidar watcher instance.
+   * Create the watcher. With in-thread hooks it runs on its own thread, see
+   * `WatcherThread`. The off-thread hooks thread already plays that role.
    */
-  #createWatcher() {
-    const watcher = chokidar.watch([])
+  #createWatcher(paths: string[]) {
+    const watcher = this.#offThread ? chokidar.watch(paths) : new WatcherThread(paths)
+    this.#watcherReady = new Promise((resolve) => watcher.once('ready', () => resolve()))
 
     watcher.on('change', this.#boundFileChangeHandler)
     watcher.on('unlink', this.#boundFileChangeHandler)
@@ -210,43 +230,49 @@ export class HotHookLoader {
    * The load hook.
    * We use it mainly for adding the import.meta.hot object to the module.
    */
-  load: LoadHook = async (url, context, nextLoad) => {
+  load: LoadHook = (url, context, nextLoad) => {
     const parsedUrl = new URL(url)
     if (parsedUrl.searchParams.has('hot-hook')) {
       parsedUrl.searchParams.delete('hot-hook')
       url = parsedUrl.href
     }
 
+    /**
+     * Copy instead of deleting: in-thread hooks receive frozen import attributes
+     */
     if (context.importAttributes?.hot) {
-      delete context.importAttributes.hot
+      const { hot: _hot, ...importAttributes } = context.importAttributes
+      context = { ...context, importAttributes }
     }
 
-    const result = await nextLoad(url, context)
-    if (result.format !== 'module') return result
+    return then(nextLoad(url, context), (result) => {
+      if (result.format !== 'module') return result
 
-    /**
-     * Decode explicitly: `source` can be a Uint8Array, and `toString()`
-     * would produce its comma-separated bytes
-     */
-    const source =
-      typeof result.source === 'string' ? result.source : new TextDecoder().decode(result.source)
+      /**
+       * Decode explicitly: `source` can be a Uint8Array, e.g. when a
+       * `module.register()` hook runs after in-thread hooks, and `toString()`
+       * would produce its comma-separated bytes
+       */
+      const source =
+        typeof result.source === 'string' ? result.source : new TextDecoder().decode(result.source)
 
-    /**
-     * A module can only access its `import.meta` by writing it in its own
-     * source (`eval` and `new Function` can't), so modules without it can't
-     * observe `import.meta.hot` and are loaded unchanged. Matching only
-     * `import.meta.hot` would miss accesses like `"hot" in import.meta`
-     * used by @adonisjs/fold.
-     */
-    if (!source.includes('import.meta')) return result
+      /**
+       * A module can only access its `import.meta` by writing it in its own
+       * source (`eval` and `new Function` can't), so modules without it can't
+       * observe `import.meta.hot` and are loaded unchanged. Matching only
+       * `import.meta.hot` would miss accesses like `"hot" in import.meta`
+       * used by @adonisjs/fold.
+       */
+      if (!source.includes('import.meta')) return result
 
-    /**
-     * The helpers are prepended on line 1, so shift the module's inline
-     * source map (from tsx, ts-node, ...) to keep positions exact.
-     */
-    const hotSource = this.#getImportMetaHotSource()
-    result.source = shiftInlineSourceMap(hotSource + source, hotSource.length)
-    return result
+      /**
+       * The helpers are prepended on line 1, so shift the module's inline
+       * source map (from tsx, ts-node, ...) to keep positions exact.
+       */
+      const hotSource = this.#getImportMetaHotSource()
+      result.source = shiftInlineSourceMap(hotSource + source, hotSource.length)
+      return result
+    })
   }
 
   /**
@@ -255,14 +281,28 @@ export class HotHookLoader {
    * - Adding the hot-hook query parameter to the URL ( to getting a fresh version )
    * - And adding files to the watcher
    */
-  resolve: ResolveHook = async (specifier, context, nextResolve) => {
+  resolve: ResolveHook = (specifier, context, nextResolve) => {
     const parentUrl = (context.parentURL && new URL(context.parentURL)) as URL
     if (parentUrl?.searchParams.has('hot-hook')) {
       parentUrl.searchParams.delete('hot-hook')
       context = { ...context, parentURL: parentUrl.href }
     }
 
-    const result = await nextResolve(specifier, context)
+    return then(nextResolve(specifier, context), (result) =>
+      this.#onResolved(specifier, context, parentUrl, result),
+    )
+  }
+
+  /**
+   * Track the resolved file in the dependency tree and the watcher, and
+   * add the version query parameter to its URL
+   */
+  #onResolved(
+    specifier: string,
+    context: ResolveHookContext,
+    parentUrl: URL | undefined,
+    result: ResolveFnOutput,
+  ): ResolveFnOutput {
     const resultUrl = new URL(result.url)
 
     if (resultUrl.protocol !== 'file:') {
@@ -294,10 +334,7 @@ export class HotHookLoader {
        * from the parent file. Otherwise, hot-hook can't invalidate the file
        */
       const isImportedDynamically =
-        await this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(
-          parentPath,
-          specifier,
-        )
+        this.#dynamicImportChecker.ensureFileIsImportedDynamicallyFromParent(parentPath, specifier)
 
       /**
        * Throw an error if not dynamically imported and the option is set
@@ -332,7 +369,7 @@ export class HotHookLoader {
 
 let loader!: HotHookLoader
 export const initialize: InitializeHook = async (data: InitializeHookOptions) => {
-  loader = new HotHookLoader(data)
+  loader = new HotHookLoader(data, true)
 }
 export const load: LoadHook = (...args) => loader?.load(...args)
 export const resolve: ResolveHook = (...args) => loader?.resolve(...args)

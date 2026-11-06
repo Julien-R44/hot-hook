@@ -1,5 +1,6 @@
 import { join } from 'node:path'
 import { pEvent } from 'p-event'
+import pTimeout from 'p-timeout'
 import supertest from 'supertest'
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
@@ -43,6 +44,46 @@ test.group('Register', () => {
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated new' })
     await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated new')
+  })
+
+  test('works after a loader registered with module.register()', async ({ fs }) => {
+    await fakeInstall(fs.basePath)
+
+    /**
+     * Like ts-node, preloaded before hot-hook
+     */
+    await fs.create(
+      'async-loader.js',
+      `import { register } from 'node:module'
+       register('data:text/javascript,export async function load(url, context, next) { return next(url, context) }')`,
+    )
+
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create(
+      'server.js',
+      `import * as http from 'http'
+
+       const server = http.createServer(async (request, response) => {
+         const app = await import('./app.js', import.meta.hot?.boundary)
+         await app.default(request, response)
+       })
+
+       server.listen(3333, () => console.log('Server is running'))`,
+    )
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      nodeOptions: ['--import=./async-loader.js', '--import=hot-hook/register'],
+    })
+
+    await server.waitForOutput('Server is running')
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World!')
+
+    await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
+    await setTimeout(100)
+    await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
   })
 
   test('send full reload message', async ({ fs, assert }) => {
@@ -300,5 +341,33 @@ test.group('Register', () => {
 
     await setTimeout(100)
     await supertest('http://localhost:3333').get('/').expect(200).expect('Hello World! Updated')
+  })
+
+  test('exits when the application is done, without deprecation warnings', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', {
+      type: 'module',
+      hotHook: { boundaries: ['./app.js'] },
+    })
+    await fs.create('server.js', `await import('./app.js'); console.log('done')`)
+    await createHandlerFile({ path: 'app.js', response: 'Hello World!' })
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      nodeOptions: ['--import=hot-hook/register'],
+    })
+
+    let stderr = ''
+    server.child.stderr?.on('data', (data) => (stderr += data))
+
+    await server.waitForOutput('done')
+    await pTimeout(server.waitForExit(), { milliseconds: 2000 })
+
+    assert.equal(server.child.exitCode, 0)
+    assert.notInclude(stderr, 'DEP0205')
   })
 })

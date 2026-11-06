@@ -59,7 +59,7 @@ await hot.init({
 })
 ```
 
-The `hot.init` function internally call [`register`](https://nodejs.org/api/module.html#moduleregisterspecifier-parenturl-options) from `node:module` to hook into the module loading process. This is why you need to call it as early as possible, otherwise modules imported before the call to `hot.init` will not benefit from hot module replacement.
+The `hot.init` function internally calls [`registerHooks`](https://nodejs.org/api/module.html#moduleregisterhooksoptions) from `node:module` to hook into the module loading process. On Node.js versions older than 22.22.3, 24.11.1 or 25.1.0, it falls back to [`register`](https://nodejs.org/api/module.html#moduleregisterspecifier-parenturl-options). This is why you need to call it as early as possible, otherwise modules imported before the call to `hot.init` will not benefit from hot module replacement.
 
 Next, you need to include the types for `import.meta.hot` in your project. To do this, add the following code in a `.d.ts` file or in the `types` property of your `tsconfig.json`.
 

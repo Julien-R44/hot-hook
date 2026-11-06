@@ -179,7 +179,7 @@ test.group('Loader', () => {
     assert.isDefined(result)
   })
 
-  test('does not shift positions of modules that do not use import.meta.hot', async ({
+  test('does not shift positions of modules that do not use import.meta', async ({
     fs,
     assert,
   }) => {
@@ -205,6 +205,70 @@ test.group('Loader', () => {
     const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'stack')
 
     assert.match(result.frame, /app\.js\?hot-hook=0:1:32\)$/)
+  })
+
+  test('injects import.meta.hot into modules checking `"hot" in import.meta`', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    /**
+     * Like @adonisjs/fold, which re-imports controllers only when `hot` is set
+     */
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create('app.js', `export const hasHot = 'hot' in import.meta`)
+    await fs.create(
+      'server.js',
+      `import { hot } from 'hot-hook'
+
+       await hot.init({ root: import.meta.filename })
+
+       const app = await import('./app.js')
+       process.send({ type: 'has-hot', value: app.hasHot })`,
+    )
+
+    const server = runProcess('server.js', { cwd: fs.basePath })
+    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'has-hot')
+
+    assert.isTrue(result.value)
+  })
+
+  test('keeps inline source maps exact on the first line', async ({ fs, assert }) => {
+    await fakeInstall(fs.basePath)
+
+    /**
+     * Segments: col 0 -> 1:0, col 28 (`new Error`) -> 1:10, col 60 -> 5:0.
+     * Without shifting, the error position falls on the last segment (5:0)
+     */
+    const map = { version: 3, sources: ['original.ts'], names: [], mappings: 'AAAA,4BAAU,gCAIV' }
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create(
+      'app.js',
+      `export function boom() { throw new Error(import.meta.url) } /* padding */\n` +
+        `//# sourceMappingURL=data:application/json;base64,${Buffer.from(JSON.stringify(map)).toString('base64')}\n`,
+    )
+    await fs.create(
+      'server.js',
+      `import { hot } from 'hot-hook'
+
+       await hot.init({ root: import.meta.filename })
+
+       const app = await import('./app.js', { with: { hot: 'true' } })
+       try {
+         app.boom()
+       } catch (error) {
+         process.send({ type: 'stack', frame: error.stack.split('\\n')[1] })
+       }`,
+    )
+
+    const server = runProcess('server.js', {
+      cwd: fs.basePath,
+      nodeOptions: ['--enable-source-maps'],
+    })
+    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'stack')
+
+    assert.match(result.frame, /original\.ts:1:11\)$/)
   })
 
   test('send invalidated message when file is invalidated', async ({ fs, assert }) => {

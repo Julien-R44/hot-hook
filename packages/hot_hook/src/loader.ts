@@ -8,6 +8,7 @@ import type { InitializeHook, LoadHook, ResolveHook } from 'node:module'
 import debug from './debug.js'
 import { Matcher } from './matcher.js'
 import DependencyTree from './dependency_tree.js'
+import { shiftInlineSourceMap } from './source_map.js'
 import type { InitializeHookOptions } from './types.js'
 import { DynamicImportChecker } from './dynamic_import_checker.js'
 import { FileNotImportedDynamicallyException } from './errors/file_not_imported_dynamically_exception.js'
@@ -224,13 +225,27 @@ export class HotHookLoader {
     if (result.format !== 'module') return result
 
     /**
-     * Only inject into modules that reference `import.meta.hot`, so other
-     * modules keep their original source and positions intact.
+     * Decode explicitly: `source` can be a Uint8Array, and `toString()`
+     * would produce its comma-separated bytes
      */
-    const source = result.source!.toString()
-    if (!source.includes('import.meta.hot')) return result
+    const source =
+      typeof result.source === 'string' ? result.source : new TextDecoder().decode(result.source)
 
-    result.source = this.#getImportMetaHotSource() + source
+    /**
+     * A module can only access its `import.meta` by writing it in its own
+     * source (`eval` and `new Function` can't), so modules without it can't
+     * observe `import.meta.hot` and are loaded unchanged. Matching only
+     * `import.meta.hot` would miss accesses like `"hot" in import.meta`
+     * used by @adonisjs/fold.
+     */
+    if (!source.includes('import.meta')) return result
+
+    /**
+     * The helpers are prepended on line 1, so shift the module's inline
+     * source map (from tsx, ts-node, ...) to keep positions exact.
+     */
+    const hotSource = this.#getImportMetaHotSource()
+    result.source = shiftInlineSourceMap(hotSource + source, hotSource.length)
     return result
   }
 

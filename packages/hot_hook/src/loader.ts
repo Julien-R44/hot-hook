@@ -176,8 +176,8 @@ export class HotHookLoader {
 
   /**
    * Returns the code source for the import.meta.hot object.
-   * We need to add this to every module since `import.meta.hot` is
-   * scoped to each module.
+   * We need to add this to each module that uses it since
+   * `import.meta.hot` is scoped to each module.
    */
   #getImportMetaHotSource() {
     const hotFns = `
@@ -223,7 +223,14 @@ export class HotHookLoader {
     const result = await nextLoad(url, context)
     if (result.format !== 'module') return result
 
-    result.source = this.#getImportMetaHotSource() + result.source
+    /**
+     * Only inject into modules that reference `import.meta.hot`, so other
+     * modules keep their original source and positions intact.
+     */
+    const source = result.source!.toString()
+    if (!source.includes('import.meta.hot')) return result
+
+    result.source = this.#getImportMetaHotSource() + source
     return result
   }
 

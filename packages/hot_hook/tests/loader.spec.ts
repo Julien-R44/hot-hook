@@ -179,6 +179,34 @@ test.group('Loader', () => {
     assert.isDefined(result)
   })
 
+  test('does not shift positions of modules that do not use import.meta.hot', async ({
+    fs,
+    assert,
+  }) => {
+    await fakeInstall(fs.basePath)
+
+    await fs.createJson('package.json', { type: 'module' })
+    await fs.create('app.js', `export function boom() { throw new Error('boom') }`)
+    await fs.create(
+      'server.js',
+      `import { hot } from 'hot-hook'
+
+       await hot.init({ root: import.meta.filename })
+
+       const app = await import('./app.js', { with: { hot: 'true' } })
+       try {
+         app.boom()
+       } catch (error) {
+         process.send({ type: 'stack', frame: error.stack.split('\\n')[1] })
+       }`,
+    )
+
+    const server = runProcess('server.js', { cwd: fs.basePath })
+    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'stack')
+
+    assert.match(result.frame, /app\.js\?hot-hook=0:1:32\)$/)
+  })
+
   test('send invalidated message when file is invalidated', async ({ fs, assert }) => {
     await fakeInstall(fs.basePath)
 

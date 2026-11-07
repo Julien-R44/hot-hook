@@ -4,7 +4,7 @@ import path from 'node:path'
 import pTimeout from 'p-timeout'
 import { pEvent } from 'p-event'
 import { execaNode } from 'execa'
-import type { NodeOptions } from 'execa'
+import type { Options } from 'execa'
 import { getActiveTest } from '@japa/runner'
 
 export const projectRoot = join(import.meta.url, '../')
@@ -47,23 +47,41 @@ export async function createHandlerFile(options: { path: string; response: strin
   )
 }
 
-export function runProcess(scriptPath: string, options?: NodeOptions) {
+export function runProcess(scriptPath: string, options?: Options) {
   const activeTest = getActiveTest()
   if (!activeTest) {
     throw new Error('Cannot run a process outside of a test')
   }
 
-  const child = execaNode(scriptPath, { nodeOptions: [], buffer: false, ...options })
-  activeTest.cleanup(() => void child.kill())
+  const subprocess = execaNode(scriptPath, { nodeOptions: [], buffer: false, ...options })
+  const child = subprocess.nodeChildProcess
+  activeTest.cleanup(() => void subprocess.kill())
+  // Killing the process in cleanup rejects it; tests that care await `waitForExit`
+  subprocess.catch(() => {})
+
+  /**
+   * Execa reads IPC messages as soon as the process starts, so a message sent
+   * before a test listens for it would be lost. Record them all instead.
+   */
+  const messages: any[] = []
+  child.on('message', (message) => messages.push(message))
 
   // child.stdout?.pipe(process.stdout)
   // child.stderr?.pipe(process.stderr)
 
   return {
     child,
+    async waitForMessage(predicate: (message: any) => boolean) {
+      const received = messages.find(predicate)
+      if (received) return received
+      return await pEvent(child, 'message', predicate)
+    },
+
     async waitForOutput(output: string, timeout = 10_000) {
       const waitUntilOutput = async () => {
-        await pEvent(child.stdout!, 'data', (value) => value.toString().includes(output))
+        await pEvent(subprocess.stdout!, 'data', (value: Buffer) =>
+          value.toString().includes(output),
+        )
       }
 
       return await pTimeout(waitUntilOutput(), {
@@ -73,7 +91,7 @@ export function runProcess(scriptPath: string, options?: NodeOptions) {
     },
 
     async waitForExit() {
-      await child
+      await subprocess
     },
   }
 }

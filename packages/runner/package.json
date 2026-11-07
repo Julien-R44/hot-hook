@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@adonisjs/ace": "^13.4.0",
-    "execa": "^8.0.1"
+    "execa": "^10.2.1"
   },
   "publishConfig": {
     "access": "public",

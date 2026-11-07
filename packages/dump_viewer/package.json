@@ -29,18 +29,19 @@
     "hot-hook": "workspace:^"
   },
   "dependencies": {
-    "@unocss/reset": "^66.5.10",
+    "@unocss/reset": "^66.12.0",
     "desm": "^1.3.1",
-    "preact": "^10.28.0",
-    "vis-data": "^7.1.10",
-    "vis-network": "^9.1.13"
+    "preact": "^11.2.0",
+    "vis-data": "^8.0.6",
+    "vis-network": "^10.1.4",
+    "vis-util": "^6.0.3"
   },
   "devDependencies": {
-    "@preact/preset-vite": "^2.10.2",
+    "@preact/preset-vite": "^2.10.6",
     "hot-hook": "workspace:*",
-    "unocss": "^66.5.10",
-    "vite": "^6.4.1",
-    "vite-plugin-singlefile": "^2.3.0"
+    "unocss": "^66.12.0",
+    "vite": "^8.3.6",
+    "vite-plugin-singlefile": "^2.3.4"
   },
   "publishConfig": {
     "access": "public",

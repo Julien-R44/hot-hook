@@ -21,7 +21,7 @@ export class Matcher {
       })
       .map((path) => path.replace(/\\/g, '/'))
 
-    this.#matcher = picomatch(absolutePatterns || [], { dot: true, posixSlashes: true })
+    this.#matcher = picomatch(absolutePatterns || [], { dot: true })
   }
 
   /**

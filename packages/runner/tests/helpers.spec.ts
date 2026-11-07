@@ -17,11 +17,13 @@ test.group('Child process', () => {
       scriptArgs: [],
       nodeArgs: ['--import=../tsnode.esm.js'],
     })
-    const payload = await pEvent(childProcess, 'message', { rejectionEvents: ['error'] })
+    const payload = await pEvent(childProcess.nodeChildProcess, 'message', {
+      rejectionEvents: ['error'],
+    })
 
-    await pEvent(childProcess, 'close', { rejectionEvents: ['error'] })
+    await pEvent(childProcess.nodeChildProcess, 'close', { rejectionEvents: ['error'] })
 
-    assert.equal(childProcess.exitCode, 0)
+    assert.equal(childProcess.nodeChildProcess.exitCode, 0)
     assert.equal(payload, 'ready')
   })
 
@@ -38,10 +40,12 @@ test.group('Child process', () => {
       scriptArgs: ['--watch', '--foo=bar'],
       nodeArgs: ['--import=../tsnode.esm.js'],
     })
-    const payload = await pEvent(childProcess, 'message', { rejectionEvents: ['error'] })
-    await pEvent(childProcess, 'close', { rejectionEvents: ['error'] })
+    const payload = await pEvent(childProcess.nodeChildProcess, 'message', {
+      rejectionEvents: ['error'],
+    })
+    await pEvent(childProcess.nodeChildProcess, 'close', { rejectionEvents: ['error'] })
 
-    assert.equal(childProcess.exitCode, 0)
+    assert.equal(childProcess.nodeChildProcess.exitCode, 0)
     assert.deepEqual(payload, { args: ['--watch', '--foo=bar'] })
   })
 
@@ -59,10 +63,12 @@ test.group('Child process', () => {
       nodeArgs: ['--conditions=dev', '--import=tsx'],
     })
 
-    const payload = await pEvent(childProcess, 'message', { rejectionEvents: ['error'] })
-    await pEvent(childProcess, 'close', { rejectionEvents: ['error'] })
+    const payload = await pEvent(childProcess.nodeChildProcess, 'message', {
+      rejectionEvents: ['error'],
+    })
+    await pEvent(childProcess.nodeChildProcess, 'close', { rejectionEvents: ['error'] })
 
-    assert.equal(childProcess.exitCode, 0)
+    assert.equal(childProcess.nodeChildProcess.exitCode, 0)
     assert.deepEqual(payload, {
       args: ['--enable-source-maps', '--conditions=dev', '--import=tsx'],
     })
@@ -81,8 +87,8 @@ test.group('Child process', () => {
       scriptArgs: [],
       nodeArgs: ['--import=../tsnode.esm.js'],
     })
-    await pEvent(childProcess, 'close', { rejectionEvents: ['error'] })
-    assert.equal(childProcess.exitCode, 0)
+    await pEvent(childProcess.nodeChildProcess, 'close', { rejectionEvents: ['error'] })
+    assert.equal(childProcess.nodeChildProcess.exitCode, 0)
   })
 
   test('get child process exit code', async ({ fs, assert }) => {
@@ -99,8 +105,8 @@ test.group('Child process', () => {
       nodeArgs: ['--import=../tsnode.esm.js'],
     })
 
-    await pEvent(childProcess, 'close', { rejectionEvents: ['error'] })
-    assert.equal(childProcess.exitCode, 1)
+    await assert.rejects(() => childProcess)
+    assert.equal(childProcess.nodeChildProcess.exitCode, 1)
   })
 
   test('await and get child process exit code', async ({ fs, assert }) => {
@@ -121,7 +127,7 @@ test.group('Child process', () => {
     try {
       await childProcess
     } catch {
-      assert.equal(childProcess.exitCode, 1)
+      assert.equal(childProcess.nodeChildProcess.exitCode, 1)
     }
   })
 })

@@ -1,5 +1,5 @@
 import { relative } from 'node:path'
-import { type ExecaChildProcess } from 'execa'
+import { type ResultPromise } from 'execa'
 import { BaseCommand, args, flags } from '@adonisjs/ace'
 
 import { runNode } from './helpers.js'
@@ -23,7 +23,7 @@ export class Serve extends BaseCommand {
   @flags.array({ description: 'Script arguments to pass to the script' })
   declare scriptArgs: string[]
 
-  #httpServer?: ExecaChildProcess<string>
+  #httpServer?: ResultPromise
   #onReloadAsked?: (updatedFile: string, shouldBeReloadable: boolean) => void
   #onFileInvalidated?: (invalidatedFiles: string[]) => void
 
@@ -53,7 +53,7 @@ export class Serve extends BaseCommand {
       scriptArgs: this.scriptArgs,
     })
 
-    this.#httpServer.on('message', async (message: any) => {
+    this.#httpServer.nodeChildProcess.on('message', async (message: any) => {
       if (typeof message !== 'object') return
 
       if ('type' in message && message.type === 'hot-hook:full-reload') {
@@ -94,7 +94,7 @@ export class Serve extends BaseCommand {
         this.#log(`${message}\n${warning}`)
       }
 
-      this.#httpServer?.removeAllListeners()
+      this.#httpServer?.nodeChildProcess.removeAllListeners()
       this.#httpServer?.kill('SIGKILL')
       this.#startHTTPServer()
     }
@@ -114,7 +114,7 @@ export class Serve extends BaseCommand {
    */
   async close() {
     if (this.#httpServer) {
-      this.#httpServer.removeAllListeners()
+      this.#httpServer.nodeChildProcess.removeAllListeners()
       this.#httpServer.kill('SIGKILL')
     }
   }

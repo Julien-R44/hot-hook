@@ -1,5 +1,4 @@
 import { join } from 'node:path'
-import { pEvent } from 'p-event'
 import supertest from 'supertest'
 import { test } from '@japa/runner'
 import { setTimeout } from 'node:timers/promises'
@@ -83,9 +82,7 @@ test.group('Loader', () => {
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
     await setTimeout(100)
 
-    const result = await pEvent(
-      server.child,
-      'message',
+    const result = await server.waitForMessage(
       (message: any) =>
         message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js'),
     )
@@ -175,7 +172,7 @@ test.group('Loader', () => {
     await server.waitForOutput('Server is running')
     await setTimeout(100)
 
-    const result = await pEvent(server.child, 'message', (message: any) => message?.type === 'ok')
+    const result = await server.waitForMessage((message: any) => message?.type === 'ok')
     assert.isDefined(result)
   })
 
@@ -202,7 +199,7 @@ test.group('Loader', () => {
     )
 
     const server = runProcess('server.js', { cwd: fs.basePath })
-    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'stack')
+    const result: any = await server.waitForMessage((m: any) => m?.type === 'stack')
 
     assert.match(result.frame, /app\.js\?hot-hook=0:1:32\)$/)
   })
@@ -229,7 +226,7 @@ test.group('Loader', () => {
     )
 
     const server = runProcess('server.js', { cwd: fs.basePath })
-    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'has-hot')
+    const result: any = await server.waitForMessage((m: any) => m?.type === 'has-hot')
 
     assert.isTrue(result.value)
   })
@@ -266,7 +263,7 @@ test.group('Loader', () => {
       cwd: fs.basePath,
       nodeOptions: ['--enable-source-maps'],
     })
-    const result: any = await pEvent(server.child, 'message', (m: any) => m?.type === 'stack')
+    const result: any = await server.waitForMessage((m: any) => m?.type === 'stack')
 
     assert.match(result.frame, /original\.ts:1:11\)$/)
   })
@@ -308,9 +305,7 @@ test.group('Loader', () => {
 
     createHandlerFile({ path: 'config/test.js', response: 'Hello Updated' })
 
-    const result = await pEvent(
-      server.child,
-      'message',
+    const result = await server.waitForMessage(
       (message: any) =>
         message?.type === 'hot-hook:invalidated' &&
         message.paths.includes(join(fs.basePath, 'config/test.js')),
@@ -400,9 +395,7 @@ test.group('Loader', () => {
 
     await setTimeout(100)
     fs.create('.env', 'HELLO=WORLD UPDATED')
-    const result = await pEvent(
-      server.child,
-      'message',
+    const result = await server.waitForMessage(
       (message: any) => message?.type === 'hot-hook:full-reload',
     )
     assert.isDefined(result)
@@ -445,9 +438,7 @@ test.group('Loader', () => {
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
     await setTimeout(100)
 
-    const result = await pEvent(
-      server.child,
-      'message',
+    const result = await server.waitForMessage(
       (message: any) =>
         message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true,
     )
@@ -502,7 +493,7 @@ test.group('Loader', () => {
 
     await setTimeout(100)
 
-    const result = await pEvent(server.child, 'message', (message: any) => {
+    const result = await server.waitForMessage((message: any) => {
       console.log(message)
       return message?.type === 'hot-hook:full-reload' && message.shouldBeReloadable === true
     })
@@ -543,6 +534,6 @@ test.group('Loader', () => {
       nodeOptions: ['--import=hot-hook/register'],
     })
 
-    await assert.rejects(async () => await server.child!)
+    await assert.rejects(() => server.waitForExit())
   }).disableTimeout()
 })

@@ -1,5 +1,4 @@
 import { join } from 'node:path'
-import { pEvent } from 'p-event'
 import pTimeout from 'p-timeout'
 import supertest from 'supertest'
 import { test } from '@japa/runner'
@@ -117,9 +116,7 @@ test.group('Register', () => {
     await setTimeout(100)
 
     await createHandlerFile({ path: 'app.js', response: 'Hello World! Updated' })
-    const result = await pEvent(
-      server.child,
-      'message',
+    const result = await server.waitForMessage(
       (message: any) =>
         message?.type === 'hot-hook:full-reload' && message.path === join(fs.basePath, 'app.js'),
     )
@@ -249,9 +246,7 @@ test.group('Register', () => {
     await server.waitForOutput('Server is running')
 
     await fs.create('.restart-file', '')
-    await pEvent(
-      server.child,
-      'message',
+    await server.waitForMessage(
       (message: any) =>
         message?.type === 'hot-hook:full-reload' && message.path.includes('.restart-file'),
     )
@@ -291,9 +286,7 @@ test.group('Register', () => {
     await server.waitForOutput('Server is running')
 
     await fs.create('.env', '')
-    await pEvent(
-      server.child,
-      'message',
+    await server.waitForMessage(
       (message: any) => message?.type === 'hot-hook:full-reload' && message.path.includes('.env'),
     )
   })

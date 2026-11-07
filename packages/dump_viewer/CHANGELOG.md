@@ -1,5 +1,11 @@
 # @hot-hook/dump-viewer
 
+## 1.0.1
+
+### Patch Changes
+
+- ef08665: Accept any `hot-hook` 1.x as peer dependency instead of the exact version it was released with, so installing it next to a newer `hot-hook` no longer fails with a peer dependency conflict.
+
 ## 0.4.0
 
 ### Patch Changes

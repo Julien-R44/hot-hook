@@ -4,6 +4,11 @@
   "version": "1.0.1",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julien-R44/hot-hook.git",
+    "directory": "packages/dump_viewer"
+  },
   "keywords": [
     "hmr",
     "hot",

@@ -5,6 +5,11 @@
   "description": "Runner for applications that use hot-hook",
   "author": "Julien Ripouteau <julien@ripouteau.com>",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Julien-R44/hot-hook.git",
+    "directory": "packages/runner"
+  },
   "keywords": [
     "hot-hook",
     "runner",

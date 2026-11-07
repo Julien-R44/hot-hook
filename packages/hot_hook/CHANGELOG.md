@@ -1,5 +1,19 @@
 # hot-hook
 
+## 1.1.0
+
+### Minor Changes
+
+- c9f357a: Use synchronous `module.registerHooks()` on Node.js >= 22.22.3, 24.11.1, 25.1.0 and 26 instead of the deprecated `module.register()` (DEP0205). Older Node.js versions fall back to `module.register()`, since their `registerHooks()` breaks CommonJS loading when combined with `module.register()` hooks such as ts-node's.
+
+  With in-thread hooks, `require()` calls also go through hot-hook.
+
+### Patch Changes
+
+- ed28a8c: Only inject the `import.meta.hot` helpers into modules that reference `import.meta`. Other modules, including most `node_modules` dependencies, are now loaded unchanged, so their positions and source maps are no longer shifted by the injected code. See #15.
+
+  Modules that get the helpers keep exact positions when they have an inline source map, as produced by tsx, ts-node or `@poppinss/ts-exec`: hot-hook now shifts it to account for the injected code.
+
 ## 0.4.0
 
 ### Minor Changes
